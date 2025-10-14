@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 
-/// Input para formularios (presentación pura)
-/// - Título configurable (por defecto: "Titulo del trabajo").
-/// - Campo de texto usando flutter_form_builder (look & feel moderno).
-/// - No hace llamadas a datos: emite cambios vía onChanged.
-/// - Responsivo: ocupa el ancho disponible, alto del campo ~40.
-///
-/// Requisitos:
-///   flutter_form_builder: ^9.2.1 (o similar)
+// Input para formularios
+// Título configurable (por defecto: "Titulo del trabajo").
+// Campo de texto usando flutter_form_builder (look & feel moderno).
+// No hace llamadas a datos: emite cambios vía onChanged.
+// Requisitos:
+// flutter_form_builder: ^9.2.1 (o similar)
 class LabeledFormInput extends StatefulWidget {
   final String title;
-  final String name; // clave del campo dentro del form
+  final String name;
   final String? hintText;
   final String? initialValue;
   final ValueChanged<String?>? onChanged;
@@ -56,7 +54,7 @@ class _LabeledFormInputState extends State<LabeledFormInput> {
                   widget.title,
                   style: const TextStyle(
                     fontFamily: 'Roboto',
-                    fontWeight: FontWeight.w800, // ExtraBold
+                    fontWeight: FontWeight.w800,
                     fontSize: 20,
                     color: Colors.black,
                   ),
@@ -90,7 +88,7 @@ class _LabeledFormInputState extends State<LabeledFormInput> {
                       isDense: true,
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 14,
-                        vertical: 10, // ~40 de alto total
+                        vertical: 10,
                       ),
                       filled: true,
                       fillColor: const Color.fromARGB(255, 255, 255, 255),
@@ -117,8 +115,6 @@ class _LabeledFormInputState extends State<LabeledFormInput> {
                           width: 1,
                         ),
                       ),
-
-                      // Sombra sutil (envolvemos con Material para animación ripple)
                     ),
                   ),
                 ),

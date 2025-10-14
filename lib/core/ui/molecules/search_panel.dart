@@ -10,9 +10,7 @@ class QuickFilter {
   const QuickFilter({required this.label, this.width, this.iconAsset});
 }
 
-/// Panel de búsqueda (base 412×102) con:
-/// - Input “Busca lo que necesitas” (402×42, #E0D8E0, borde 8)
-/// - Carrusel horizontal de filtros rápidos clicables
+/// Panel de búsqueda
 class SearchPanel extends StatefulWidget {
   final void Function(String query)? onSearchTap;
 
@@ -93,8 +91,8 @@ class _SearchPanelState extends State<SearchPanel> {
               final f = _filters[i];
               return _QuickFilterChip(
                 label: f.label,
-                width: f.width, // null => auto width
-                iconAsset: f.iconAsset, // opcional
+                width: f.width,
+                iconAsset: f.iconAsset,
                 onTap: () => widget.onFilterTap?.call(f.label),
               );
             },
@@ -145,8 +143,7 @@ class _SearchInputState extends State<_SearchInput> {
             children: [
               Expanded(
                 child: Focus(
-                  onFocusChange: (focus) =>
-                      setState(() => _pressed = focus), // animación al enfocar
+                  onFocusChange: (focus) => setState(() => _pressed = focus),
                   child: TextField(
                     controller: widget.controller,
                     style: const TextStyle(
@@ -174,7 +171,7 @@ class _SearchInputState extends State<_SearchInput> {
                 ),
               ),
               const SizedBox(width: 8),
-              // Icono lupa (acción de buscar)
+              // Icono lupa
               InkResponse(
                 radius: 20,
                 onTap: widget.onTapIcon,
@@ -196,7 +193,7 @@ class _SearchInputState extends State<_SearchInput> {
 
 class _QuickFilterChip extends StatefulWidget {
   final String label;
-  final double? width; // null => auto width
+  final double? width;
   final String? iconAsset;
   final VoidCallback? onTap;
 
@@ -266,7 +263,7 @@ class _QuickFilterChipState extends State<_QuickFilterChip> {
     );
 
     final sized = widget.width == null
-        ? IntrinsicWidth(child: chipCore) // ancho auto según el texto
+        ? IntrinsicWidth(child: chipCore)
         : SizedBox(width: widget.width, child: chipCore);
 
     return AnimatedScale(

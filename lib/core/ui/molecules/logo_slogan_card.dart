@@ -118,7 +118,7 @@ class _CardBody extends StatelessWidget {
                       style: TextStyle(
                         fontFamily: 'Roboto',
                         fontWeight: FontWeight.w800,
-                        fontSize: 96, // tamaño base; FittedBox lo ajusta
+                        fontSize: 96,
                         color: titleColor,
                         height: 1.0,
                         shadows: const [

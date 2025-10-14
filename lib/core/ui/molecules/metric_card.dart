@@ -14,7 +14,7 @@ class MetricCardData {
   const MetricCardData({required this.valueText, this.overrideTitle});
 }
 
-/// --- 🧩 DASHBOARD de métricas (2×2) ---
+/// DASHBOARD de métricas (2×2)
 class MetricDashboard extends StatelessWidget {
   final List<MetricCard> children;
 
@@ -43,7 +43,7 @@ class MetricDashboard extends StatelessWidget {
   }
 }
 
-/// --- 💠 CARD individual ---
+/// CARD individual
 class MetricCard extends StatelessWidget {
   final MetricCardType type;
   final MetricCardData data;

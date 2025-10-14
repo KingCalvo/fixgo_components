@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// Botón primario para iniciar sesión (presentación pura).
-/// - Base 378×28, responsivo mediante escalado interno.
-/// - Color #F86117, radio 4, sombra, ripple y animación de “press”.
-/// - Recibe un `payload` opcional que se pasa al callback cuando funcione.
-///
-/// Úsalo desde Presentación; no hace llamadas a red ni a BD.
+/// Recibe un payload opcional que se pasa al callback cuando funcione.
 class LoginButton extends StatefulWidget {
   final String label;
   final void Function(Object? payload)? onPressed;
@@ -76,7 +72,7 @@ class _LoginButtonState extends State<LoginButton> {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w400, // Regular
+                        fontWeight: FontWeight.w400,
                         fontSize: 16,
                         color: widget.textColor,
                       ),

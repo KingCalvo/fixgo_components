@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 class CategoryRating {
-  final String label; // ej. "Calidad del trabajo"
-  final int rating; // 0..5
+  final String label;
+  final int rating;
 
   const CategoryRating({required this.label, required this.rating});
 }
@@ -11,11 +11,11 @@ class CategoryRating {
 class CategoryRatings extends StatelessWidget {
   final List<CategoryRating> items;
 
-  /// Estilo / layout
+  /// Estilo
   final double baseWidth;
   final EdgeInsets padding;
-  final double starSize; // 18.22
-  final double starGap; // 8
+  final double starSize;
+  final double starGap;
 
   const CategoryRatings({
     super.key,
@@ -66,9 +66,9 @@ class CategoryRatings extends StatelessWidget {
 
 class _CategoryRow extends StatelessWidget {
   final String label;
-  final int rating; // 0..5
-  final double starSize; // ~18.22
-  final double starGap; // 8
+  final int rating;
+  final double starSize;
+  final double starGap;
 
   const _CategoryRow({
     required this.label,
@@ -87,7 +87,7 @@ class _CategoryRow extends StatelessWidget {
             label,
             style: const TextStyle(
               fontFamily: 'Roboto',
-              fontWeight: FontWeight.w400, // regular
+              fontWeight: FontWeight.w400,
               fontSize: 14,
               color: Colors.black,
               height: 1.2,
@@ -102,7 +102,7 @@ class _CategoryRow extends StatelessWidget {
 }
 
 class _StarsRow extends StatelessWidget {
-  final int rating; // 0..5
+  final int rating;
   final double size;
   final double gap;
 
@@ -121,7 +121,7 @@ class _StarsRow extends StatelessWidget {
         Icon(
           filled ? Icons.star : Icons.star_border,
           size: size,
-          color: filled ? const Color(0xFFFFC107) : Colors.black, // borde negro
+          color: filled ? const Color(0xFFFFC107) : Colors.black,
         ),
       );
       if (i != 4) stars.add(SizedBox(width: gap));

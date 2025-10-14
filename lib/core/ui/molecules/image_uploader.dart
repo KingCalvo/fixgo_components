@@ -5,10 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-/// Componente: 4 espacios para subir imágenes con preview y botón de eliminar.
-/// - Tamaño base pensado: 392x120, pero es responsivo.
-/// - Pide permisos una sola vez y evita solicitudes simultáneas.
-/// - onChanged devuelve la lista (de 4) con XFile? (nulos donde no hay imagen).
+// Componente: 4 espacios para subir imágenes con preview y botón de eliminar.
+// Pide permisos una sola vez y evita solicitudes simultáneas.
+// onChanged devuelve la lista (de 4) con XFile? (nulos donde no hay imagen).
 class ImageUploader4 extends StatefulWidget {
   const ImageUploader4({
     super.key,
@@ -19,14 +18,16 @@ class ImageUploader4 extends StatefulWidget {
     this.gap = 16,
   });
 
-  /// Puedes pasar 0..4 imágenes iniciales (el resto se rellena con null).
+  // Se puede pasar 0..4 imágenes iniciales (el resto se rellena con null).
   final List<XFile?>? initialFiles;
 
   final ValueChanged<List<XFile?>>? onChanged;
 
+  /// Tamaño “objetivo” (se escala de manera fluida).
   final double width;
   final double height;
 
+  /// Separación horizontal entre tarjetas.
   final double gap;
 
   @override
@@ -241,7 +242,7 @@ class _ImageSlotState extends State<_ImageSlot> {
         elevation: 4,
         shadowColor: Colors.black.withValues(alpha: 0.25),
         child: InkWell(
-          onTap: () {}, // no-op para ripple
+          onTap: () {},
           onHighlightChanged: (v) => setState(() => _down = v),
           borderRadius: BorderRadius.circular(8),
           splashColor: Colors.black.withValues(alpha: 0.06),
@@ -275,7 +276,7 @@ class _ImageSlotState extends State<_ImageSlot> {
                       ),
                       alignment: Alignment.center,
                       child: const Icon(
-                        Icons.delete_forever_rounded, // “Trash”
+                        Icons.delete_forever_rounded,
                         size: 30,
                         color: Color(0xFFD41E1E),
                       ),

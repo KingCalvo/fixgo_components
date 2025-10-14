@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class PublishPromptData {
-  /// Imagen a la izquierda (usa uno u otro)
+  /// Imagen a la izquierda
   final String? imageAsset;
   final String? imageUrl;
 
@@ -14,7 +14,7 @@ class PublishPromptData {
 class PublishPromptCard extends StatelessWidget {
   final PublishPromptData data;
 
-  /// Dimensiones base del diseño (se escala de forma responsiva)
+  /// Dimensiones base del diseño
   final double baseWidth;
   final double baseHeight;
 
@@ -51,7 +51,7 @@ class PublishPromptCard extends StatelessWidget {
   Widget _content(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF2E2E2E).withValues(alpha: 0.62), // 62%
+        color: const Color(0xFF2E2E2E).withValues(alpha: 0.62),
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
@@ -75,7 +75,7 @@ class PublishPromptCard extends StatelessWidget {
           Expanded(
             child: Column(
               mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween, // botón abajo
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Flexible(
@@ -86,7 +86,7 @@ class PublishPromptCard extends StatelessWidget {
                           text: '¿Tienes un presupuesto? ',
                           style: TextStyle(
                             fontFamily: 'Roboto',
-                            fontWeight: FontWeight.w800, // ExtraBold
+                            fontWeight: FontWeight.w800,
                             fontSize: 16,
                             color: Colors.white,
                           ),
@@ -96,7 +96,7 @@ class PublishPromptCard extends StatelessWidget {
                               'Publícalo y los proveedores cercanos te contactan',
                           style: TextStyle(
                             fontFamily: 'Roboto',
-                            fontWeight: FontWeight.w400, // Regular
+                            fontWeight: FontWeight.w400,
                             fontSize: 14,
                             color: Colors.white,
                           ),
@@ -224,7 +224,7 @@ class _PublishButtonState extends State<_PublishButton>
                 'Publicar',
                 style: TextStyle(
                   fontFamily: 'Roboto',
-                  fontWeight: FontWeight.w600, // Semibold
+                  fontWeight: FontWeight.w600,
                   fontSize: 10,
                   color: Colors.white,
                 ),

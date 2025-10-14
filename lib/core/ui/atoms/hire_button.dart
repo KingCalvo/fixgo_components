@@ -46,7 +46,7 @@ class _HireButtonState extends State<HireButton> {
             elevation: 4,
             shadowColor: Colors.black.withValues(alpha: 0.35),
             child: InkWell(
-              onTap: widget.onPressed, // navegarás más adelante
+              onTap: widget.onPressed,
               onHighlightChanged: (v) => setState(() => _pressed = v),
               borderRadius: BorderRadius.circular(4),
               splashColor: Colors.white.withValues(alpha: 0.16),

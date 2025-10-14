@@ -63,10 +63,9 @@ class _ComponentGalleryState extends State<ComponentGallery> {
         centerTitle: true,
       ),
       body: SafeArea(
-        // 🔽 Ahora el body está envuelto en un Stack para superponer el FAB del bot
+        // body está envuelto en un Stack para superponer el FAB del bot
         child: Stack(
           children: [
-            // Contenido original tal cual lo tenías
             SingleChildScrollView(
               padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 12),
               child: Column(
@@ -80,7 +79,7 @@ class _ComponentGalleryState extends State<ComponentGallery> {
                   ),
                   const SizedBox(height: 12),
 
-                  // 1) Profile header
+                  // Profile header
                   ProfileHeaderCard(
                     data: profileData,
                     onBack: () => _show(context, 'Back pressed (Profile)'),
@@ -90,22 +89,22 @@ class _ComponentGalleryState extends State<ComponentGallery> {
 
                   const SizedBox(height: 48),
 
-                  // 2) Logo + Slogan
+                  // Logo + Slogan
                   LogoSloganCard(logoAsset: 'assets/LogoNaranja.png'),
 
                   const SizedBox(height: 24),
 
-                  // 3) Login Button (base 378×28; responsivo)
+                  // Login Button
                   LoginButton(
                     onPressed: (_) => _show(context, 'Tap: Iniciar sesión'),
                     payload: {'source': 'gallery-login'},
                   ),
 
-                  // 4: Logo + Name
+                  // Logo + Name
                   const SizedBox(height: 48),
                   LogoNameCard(logoAsset: 'assets/LogoVerde.png'),
 
-                  // 5: Role Switch
+                  // Role Switch
                   const SizedBox(height: 24),
                   RoleSwitch(
                     value: _role,
@@ -117,7 +116,8 @@ class _ComponentGalleryState extends State<ComponentGallery> {
                       );
                     },
                   ),
-                  // 6: Terms Consent Row
+
+                  // Terms Consent Row
                   const SizedBox(height: 16),
                   TermsConsentRow(
                     value: _acceptedTerms,
@@ -126,7 +126,7 @@ class _ComponentGalleryState extends State<ComponentGallery> {
                         _show(context, 'Abrir: Términos del servicio'),
                   ),
 
-                  // 7: Service Request Card
+                  // Service Request Card
                   // 1) Solicitud
                   const SizedBox(height: 48),
                   ServiceRequestCard(
@@ -187,7 +187,7 @@ class _ComponentGalleryState extends State<ComponentGallery> {
                     ),
                   ),
 
-                  // 8: Services Description
+                  // Services Description
                   const SizedBox(height: 24),
                   ServicesDescription(
                     services: const [
@@ -224,7 +224,7 @@ class _ComponentGalleryState extends State<ComponentGallery> {
                     ],
                   ),
 
-                  // Reseñas (Reviews) Carousel
+                  // Reseñas Carrusel
                   const SizedBox(height: 48),
                   ReviewsCarousel(
                     reviews: const [
@@ -473,7 +473,6 @@ class _ComponentGalleryState extends State<ComponentGallery> {
                     data: const PublishPromptData(
                       imageUrl: 'https://picsum.photos/seed/tool/120',
                     ),
-                    // onPublish: () => _show(context, 'Ir a publicar'),
                   ),
 
                   // Carrusel de imágenes
@@ -490,8 +489,7 @@ class _ComponentGalleryState extends State<ComponentGallery> {
                   // Botón Contratar
                   const SizedBox(height: 16),
                   SizedBox(
-                    // opcional: para forzar el ancho completo del viewport
-                    width: 392, // o MediaQuery.of(context).size.width - 20
+                    width: 392,
                     child: HireButton(
                       onPressed: () {
                         // TODO: navegación a la pantalla de contratación
@@ -504,7 +502,7 @@ class _ComponentGalleryState extends State<ComponentGallery> {
                   // Botón Publicar trabajo
                   const SizedBox(height: 16),
                   SizedBox(
-                    width: 392, // o MediaQuery.of(context).size.width - 20
+                    width: 392,
                     child: PublishButton(
                       onPressed: () {
                         // TODO: navegar a la pantalla de publicación
@@ -518,17 +516,15 @@ class _ComponentGalleryState extends State<ComponentGallery> {
                   const SizedBox(height: 24),
                   ImageUploader4(
                     onChanged: (files) {
-                      // files.length == 4; cada posición puede ser null o XFile
                       debugPrint(
                         'Subidas: ${files.where((f) => f != null).length}',
                       );
                     },
                   ),
 
-                  // Selector de categorías (ServiceCategorySelector)
+                  // Selector de categorías
                   const SizedBox(height: 24),
                   ServiceCategorySelector(
-                    // initialSelected: const ['Pintura'], // opcional
                     onChanged: (list) =>
                         _show(context, 'Categorías: ${list.join(", ")}'),
                   ),
@@ -541,7 +537,7 @@ class _ComponentGalleryState extends State<ComponentGallery> {
                         debugPrint('Fecha propuesta: $date'),
                   ),
 
-                  // Input de formulario (FormInput)
+                  // Input de formulario
                   const SizedBox(height: 24),
                   LabeledFormInput(
                     name: 'job_title',
@@ -584,13 +580,12 @@ class _ComponentGalleryState extends State<ComponentGallery> {
               ),
             ),
 
-            // 🔝 Botón flotante del bot superpuesto (abajo-derecha)
+            // Botón flotante del bot superpuesto (abajo-derecha)
             Positioned(
               right: 16,
               bottom: 16,
               child: BotFab(
                 data: BotFabData(
-                  // imageAsset: 'assets/bot.png',
                   imageUrl: 'https://picsum.photos/seed/bot/120',
                   onTap: () => _show(context, 'Abrir chat del bot'),
                 ),

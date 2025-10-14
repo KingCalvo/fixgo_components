@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-/// Datos para hidratar la card (presentación)
 class CategoryDiscountData {
   final String percentText;
   final String subtitle;
+
   /// Imagen de la categoría (usa uno u otro)
   final String? imageAsset; // asset local 116×116
   final String? imageUrl; // url remota 116×116
@@ -20,7 +20,7 @@ class CategoryDiscountData {
 class CategoryDiscountCard extends StatelessWidget {
   final CategoryDiscountData data;
 
-  /// Dimensiones base (responsivo con LayoutBuilder)
+  /// Dimensiones base
   final double baseWidth;
   final double baseHeight;
 
@@ -85,7 +85,7 @@ class CategoryDiscountCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontFamily: 'Roboto',
-                      fontWeight: FontWeight.w600, // semibold
+                      fontWeight: FontWeight.w600,
                       fontSize: 25,
                       color: Colors.black,
                     ),
@@ -96,7 +96,7 @@ class CategoryDiscountCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontFamily: 'Roboto',
-                      fontWeight: FontWeight.w600, // semibold
+                      fontWeight: FontWeight.w600,
                       fontSize: 25,
                       color: Colors.black,
                     ),

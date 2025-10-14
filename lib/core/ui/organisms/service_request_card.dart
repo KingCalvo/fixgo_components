@@ -33,29 +33,29 @@ Color _serviceColor(ServiceStatus s) {
 
 class ServiceRequestData {
   // Encabezado
-  final String customerName; 
-  final String customerPhotoUrl; 
-  final double rating; 
+  final String customerName;
+  final String customerPhotoUrl;
+  final double rating;
 
   // Detalle
-  final String serviceType; // "Pintura"
-  final String title; // "Pintar sala y comedor"
-  final String materialSource; // "Propio" | "Proveedor"
-  final String location; // "Yautepec Mor."
-  final String dateText; // "26/08/2025"
-  final String timeText; // "17:20 Hrs"
+  final String serviceType;
+  final String title;
+  final String materialSource;
+  final String location;
+  final String dateText;
+  final String timeText;
 
   final String placeImageUrl; // imagen lugar (Firebase)
-  final String description; // texto largo
+  final String description;
   final List<String> miniImages; // íconos/mini fotos
 
-  final String totalText; // "$1,200 MXN"
+  final String totalText;
 
   // Campos opcionales para variantes
-  final String? serviceNumber; // "24569" (Propuesta/Servicio)
-  final ProposalStatus? proposalStatus; // chip (Propuesta)
-  final String? estimatedTimeText; // "17:30 hrs" (Propuesta)
-  final ServiceStatus? serviceStatus; // chip (Servicio)
+  final String? serviceNumber;
+  final ProposalStatus? proposalStatus;
+  final String? estimatedTimeText;
+  final ServiceStatus? serviceStatus;
 
   const ServiceRequestData({
     required this.customerName,
@@ -128,13 +128,11 @@ class ServiceRequestCard extends StatelessWidget {
   });
 
   double _computedBaseHeight() {
-    if (variant == ServiceCardVariant.solicitud) return 470; // tu ajuste
-    if (variant == ServiceCardVariant.propuesta) return 550; // tu ajuste
-
-    // servicio
-    if (data.serviceStatus == ServiceStatus.finalizado) return 450; // ✅ pedido
-    if (data.serviceStatus == ServiceStatus.cancelado) return 440; // ✅ pedido
-    return 609; // activo
+    if (variant == ServiceCardVariant.solicitud) return 470;
+    if (variant == ServiceCardVariant.propuesta) return 550;
+    if (data.serviceStatus == ServiceStatus.finalizado) return 450;
+    if (data.serviceStatus == ServiceStatus.cancelado) return 440;
+    return 609;
   }
 
   @override
@@ -177,13 +175,13 @@ class ServiceRequestCard extends StatelessWidget {
                     const SizedBox(height: 6),
                     const _Divider382(),
                     const SizedBox(height: 6),
-                    _topDetailBlock(), // imagen + textos + chip según variante
+                    _topDetailBlock(),
                     const SizedBox(height: 12),
                     _descriptionBlock(),
                     const SizedBox(height: 8),
                     const _Divider382(),
                     const SizedBox(height: 6),
-                    _totalRowAndExtras(), // total + (extras según variante)
+                    _totalRowAndExtras(),
                     ..._footerActions(context),
                   ],
                 ),
@@ -586,7 +584,7 @@ class ServiceRequestCard extends StatelessWidget {
   }
 
   List<Widget> _footerActions(BuildContext context) {
-    // --- Variante SOLICITUD ---
+    // Variante SOLICITUD
     if (variant == ServiceCardVariant.solicitud) {
       return [
         const SizedBox(height: 6),
@@ -609,7 +607,7 @@ class ServiceRequestCard extends StatelessWidget {
       ];
     }
 
-    // --- Variante PROPUESTA ---
+    // Variante PROPUESTA
     if (variant == ServiceCardVariant.propuesta) {
       return [
         const SizedBox(height: 6),
@@ -632,7 +630,7 @@ class ServiceRequestCard extends StatelessWidget {
       ];
     }
 
-    // --- Variante SERVICIO ---
+    // Variante SERVICIO
     if (data.serviceStatus == ServiceStatus.activo) {
       return [
         const SizedBox(height: 8),
@@ -830,7 +828,7 @@ class _MiniImage extends StatelessWidget {
 }
 
 class _StarsRow extends StatelessWidget {
-  final double rating; // 0..5
+  final double rating;
   final double size;
   final double gap;
   const _StarsRow({required this.rating, this.size = 18, this.gap = 6});

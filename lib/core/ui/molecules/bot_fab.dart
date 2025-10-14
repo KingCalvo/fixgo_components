@@ -9,11 +9,11 @@ class BotFabData {
   const BotFabData({this.imageAsset, this.imageUrl, this.onTap});
 }
 
-/// Botón flotante 62x62 que se superpone al contenido
+/// Botón flotante
 class BotFab extends StatefulWidget {
   final BotFabData data;
-  final double size; // 62 por defecto
-  final EdgeInsets margin; // separación respecto a los bordes
+  final double size;
+  final EdgeInsets margin;
 
   const BotFab({
     super.key,

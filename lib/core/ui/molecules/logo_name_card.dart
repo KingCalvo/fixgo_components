@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 
 class LogoNameCard extends StatelessWidget {
-  final String logoAsset; // p.ej. 'assets/LogoVerde.png'
-  final String title; // p.ej. 'FixGo'
-  final Color backgroundColor; // p.ej. Colors.white
-  final Color titleColor; // p.ej. Color(0xFF424242)
-  final double titleFontSize; // base 80 (se escala)
-  final double baseWidth; // 352
-  final double baseHeight; // 111
-  final double padding; // 10
-  final double borderRadius; // 8
+  final String logoAsset;
+  final String title;
+  final Color backgroundColor;
+  final Color titleColor;
+  final double titleFontSize;
+  final double baseWidth;
+  final double baseHeight;
+  final double padding;
+  final double borderRadius;
 
   const LogoNameCard({
     super.key,
@@ -44,7 +44,7 @@ class LogoNameCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(borderRadius),
                 boxShadow: const [
                   BoxShadow(
-                    color: Color(0x33000000), // negro 20%
+                    color: Color(0x33000000),
                     blurRadius: 12,
                     offset: Offset(0, 6),
                   ),
@@ -72,7 +72,7 @@ class LogoNameCard extends StatelessWidget {
                           textAlign: TextAlign.left,
                           style: TextStyle(
                             fontFamily: 'Roboto',
-                            fontWeight: FontWeight.w800, // ExtraBold aprox.
+                            fontWeight: FontWeight.w800,
                             fontSize: titleFontSize,
                             color: titleColor,
                             height: 1.0,

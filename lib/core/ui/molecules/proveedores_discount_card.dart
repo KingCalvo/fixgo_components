@@ -30,7 +30,7 @@ class ProviderDiscountCard extends StatelessWidget {
     super.key,
     required this.data,
     this.baseWidth = 346,
-    this.baseHeight = 184, // ← antes 178
+    this.baseHeight = 184,
   });
 
   @override
@@ -69,15 +69,13 @@ class ProviderDiscountCard extends StatelessWidget {
           ),
         ],
       ),
-      padding: const EdgeInsets.all(15), // padding solicitado
+      padding: const EdgeInsets.all(15),
       child: Column(
-        mainAxisSize: MainAxisSize.min, // ayuda a ajustar la altura
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.only(
-              left: 10,
-            ), // 🔹 mueve la imagen a la derecha
+            padding: const EdgeInsets.only(left: 10),
             child: SizedBox(
               width: 70,
               height: 78,

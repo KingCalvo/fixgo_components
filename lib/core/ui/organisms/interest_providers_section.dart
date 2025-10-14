@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 class InterestedProviderData {
-  final String title; // Ej: "Ferretería El MARTILLO" o "Juan Pérez"
-  final String description; // Copy corto
-  final double rating; // 0..5 (permite .5)
-  final String photoUrl; // Imagen del negocio/proveedor (Firebase)
+  final String title;
+  final String description;
+  final double rating;
+  final String photoUrl;
 
   const InterestedProviderData({
     required this.title,
@@ -65,7 +65,7 @@ class _InterestingProvidersSectionState
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontFamily: 'Roboto',
-                fontWeight: FontWeight.w600, // Semibold
+                fontWeight: FontWeight.w600,
                 fontSize: 18,
                 color: Colors.black,
               ),
@@ -105,7 +105,7 @@ class _InterestingProvidersSectionState
 
             const SizedBox(height: 10),
 
-            // Ver más / Ver menos (si hay más que initialVisible)
+            // Ver más / Ver menos
             if (widget.items.length > widget.initialVisible)
               _SeeMoreBar(
                 expanded: _expanded,
@@ -118,7 +118,7 @@ class _InterestingProvidersSectionState
   }
 }
 
-/// Card individual (412w x 130h visual)
+/// Card individual
 class _InterestedCard extends StatefulWidget {
   final InterestedProviderData item;
   final VoidCallback? onKnow;
@@ -148,11 +148,11 @@ class _InterestedCardState extends State<_InterestedCard> {
           onHighlightChanged: (v) => setState(() => _pressed = v),
           borderRadius: BorderRadius.circular(8),
           child: Padding(
-            padding: const EdgeInsets.all(10), // padding solicitado
+            padding: const EdgeInsets.all(10),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Imagen izquierda 86x100 con borde 8
+                // Imagen izquierda
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: Image.network(
@@ -182,7 +182,7 @@ class _InterestedCardState extends State<_InterestedCard> {
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           fontFamily: 'Roboto',
-                          fontWeight: FontWeight.w500, // Medium
+                          fontWeight: FontWeight.w500,
                           fontSize: 16,
                           color: Colors.black,
                         ),
@@ -196,7 +196,7 @@ class _InterestedCardState extends State<_InterestedCard> {
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           fontFamily: 'Roboto',
-                          fontWeight: FontWeight.w300, // Light
+                          fontWeight: FontWeight.w300,
                           fontSize: 10,
                           color: Colors.black,
                           height: 1.3,
@@ -235,7 +235,7 @@ class _InterestedCardState extends State<_InterestedCard> {
   }
 }
 
-/// Barra "Ver más" (412w x 24h visual)
+/// Barra "Ver más"
 class _SeeMoreBar extends StatefulWidget {
   final bool expanded;
   final VoidCallback onTap;
@@ -273,7 +273,7 @@ class _SeeMoreBarState extends State<_SeeMoreBar> {
                   widget.expanded ? 'Ver menos' : 'Ver más',
                   style: const TextStyle(
                     fontFamily: 'Roboto',
-                    fontWeight: FontWeight.w600, // Semibold
+                    fontWeight: FontWeight.w600,
                     fontSize: 15,
                     color: Colors.black,
                   ),
@@ -296,7 +296,7 @@ class _SeeMoreBarState extends State<_SeeMoreBar> {
   }
 }
 
-/// Estrellas 12×12 con gap 5, soporta .5
+/// Estrellas
 class _StarsRow12 extends StatelessWidget {
   final double rating;
   const _StarsRow12({required this.rating});
@@ -318,7 +318,7 @@ class _StarsRow12 extends StatelessWidget {
           color = const Color(0xFFFFC107);
         } else {
           icon = Icons.star_border;
-          color = Colors.black; // “blanca con borde negro” (contorno visible)
+          color = Colors.black;
         }
         return Padding(
           padding: EdgeInsets.only(right: i == 4 ? 0 : 5),
@@ -368,7 +368,7 @@ class _SmallActionButtonState extends State<_SmallActionButton> {
             height: 18,
             child: Center(
               child: Text(
-                widget.label, // ✅ ahora usa la etiqueta que envías
+                widget.label,
                 style: const TextStyle(
                   fontFamily: 'Roboto',
                   fontWeight: FontWeight.w500,

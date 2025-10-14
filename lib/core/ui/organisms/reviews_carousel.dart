@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 
 class ReviewInfo {
-  final String name; // "Carlos Pinzón"
-  final String location; // "Yautepec, Morelos"
-  final String avatarUrl; // Firebase/URL
-  final int rating; // 0..5 (entero)
-  final String timeAgoText; // "Hace 1 semana"
-  final String comment; // texto de reseña
-  final DateTime? createdAt; // opcional (si viene de BD)
-  final int?
-  ageRank; // opcional: 0 = más reciente (fallback si no hay createdAt)
+  final String name;
+  final String location;
+  final String avatarUrl;
+  final int rating;
+  final String timeAgoText;
+  final String comment;
+  final DateTime? createdAt;
+  final int? ageRank;
 
   const ReviewInfo({
     required this.name,
@@ -23,14 +22,12 @@ class ReviewInfo {
   });
 }
 
-/// Carrusel horizontal de reseñas
-/// - Ancho base 969, alto mínimo 158
-/// - Si hay >4-5 reseñas, aparece scroll horizontal.
-/// - Cada columna: 230x157 aprox., separadas por una línea vertical.
+// Carrusel horizontal de reseñas
+
 class ReviewsCarousel extends StatelessWidget {
   final List<ReviewInfo> reviews;
 
-  // Dimensiones base (puedes ajustarlas si lo necesitas)
+  // Dimensiones base
   final double baseWidth;
   final double minHeight;
   final double columnWidth;
@@ -58,7 +55,7 @@ class ReviewsCarousel extends StatelessWidget {
 
     return Center(
       child: SizedBox(
-        width: baseWidth, // mantiene tamaño real
+        width: baseWidth,
         child: Container(
           color: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 6),
@@ -96,7 +93,7 @@ class ReviewsCarousel extends StatelessWidget {
     return out;
   }
 
-  // Fallback para la galería (demo)
+  // Fallback para la galería
   static const _fallback = <ReviewInfo>[
     ReviewInfo(
       name: 'Carlos Pinzón',
@@ -189,8 +186,7 @@ class _ReviewColumn extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             fontFamily: 'Roboto',
-                            fontWeight:
-                                FontWeight.w500, // Regular visual fuerte
+                            fontWeight: FontWeight.w500,
                             fontSize: 16,
                             color: Colors.black,
                           ),
@@ -281,7 +277,7 @@ class _Avatar extends StatelessWidget {
 }
 
 class _StarsRow extends StatelessWidget {
-  final int rating; // 0..5
+  final int rating;
   final double size;
   final double gap;
   const _StarsRow({required this.rating, this.size = 12, this.gap = 6});

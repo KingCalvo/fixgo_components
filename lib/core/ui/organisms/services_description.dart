@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
 class ServiceInfo {
-  final String name; // "Pintura", "Carpintería", etc.
-  final String title; // "Pintura de interiores"
-  final String experienceText; // "8 años de experiencia"
-  final String costText; // "Costo: $800 MXN"
-  final String? iconAsset; // 'assets/pintura.png' (opcional)
+  final String name;
+  final String title;
+  final String experienceText;
+  final String costText;
+  final String? iconAsset;
 
   const ServiceInfo({
     required this.name,
@@ -16,17 +16,14 @@ class ServiceInfo {
   });
 }
 
-/// Sección “Descripción de servicios”
-/// - baseWidth 412 (se centra) y minHeight 150 (crece si hace falta).
-/// - Si hay >3 servicios, scroll horizontal tipo carrusel.
-/// - Cada servicio es una columna separada por una línea vertical.
+// Sección “Descripción de servicios”
 class ServicesDescription extends StatelessWidget {
   final List<ServiceInfo> services;
 
   final double baseWidth;
   final double minHeight;
-  final double columnWidth; // ancho aprox. de cada columna
-  final double headerBadgeMinH; // alto mínimo del badge
+  final double columnWidth;
+  final double headerBadgeMinH;
 
   const ServicesDescription({
     super.key,
@@ -45,8 +42,7 @@ class ServicesDescription extends StatelessWidget {
       child: ConstrainedBox(
         constraints: BoxConstraints(minWidth: baseWidth, minHeight: minHeight),
         child: SizedBox(
-          width: baseWidth, // 412 px como pediste
-          // sin height fija: deja que crezca si el texto lo necesita
+          width: baseWidth,
           child: Container(
             color: Colors.white,
             child: Column(
@@ -57,7 +53,7 @@ class ServicesDescription extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontFamily: 'Roboto',
-                    fontWeight: FontWeight.w400, // regular
+                    fontWeight: FontWeight.w400,
                     fontSize: 16,
                     color: Colors.black,
                   ),
@@ -98,7 +94,7 @@ class ServicesDescription extends StatelessWidget {
         ),
       );
       if (i != items.length - 1) {
-        cols.add(_VerticalDivider()); // altura la da IntrinsicHeight
+        cols.add(_VerticalDivider());
       }
     }
     return cols;
@@ -143,9 +139,9 @@ class _ServiceColumn extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: width, // ~126 px por columna
+      width: width,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center, // <— CENTRA TODO
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
             constraints: BoxConstraints(minHeight: badgeMinHeight),
@@ -164,8 +160,7 @@ class _ServiceColumn extends StatelessWidget {
             ),
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.center, // <— icono + texto centrados
+              mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: [
                 _MiniIcon(asset: info.iconAsset),

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 class AvailabilityData {
-  final String daysLabel; // ej: "Lunes a Viernes"
-  final String timeRangeText; // ej: "9am - 5pm"
+  final String daysLabel;
+  final String timeRangeText;
 
   const AvailabilityData({
     this.daysLabel = 'Lunes a Viernes',
@@ -10,7 +10,7 @@ class AvailabilityData {
   });
 }
 
-/// Row de disponibilidad (412w x ~44h base, responsivo)
+/// Row de disponibilidad
 class AvailabilityRow extends StatelessWidget {
   final AvailabilityData data;
   final VoidCallback? onEdit;
@@ -45,7 +45,7 @@ class AvailabilityRow extends StatelessWidget {
                     'Disponible:',
                     style: TextStyle(
                       fontFamily: 'Roboto',
-                      fontWeight: FontWeight.w700, // bold
+                      fontWeight: FontWeight.w700,
                       fontSize: 12,
                       color: Colors.black,
                     ),
@@ -55,7 +55,7 @@ class AvailabilityRow extends StatelessWidget {
                     '${data.daysLabel}: ${data.timeRangeText}',
                     style: const TextStyle(
                       fontFamily: 'Roboto',
-                      fontWeight: FontWeight.w400, // regular
+                      fontWeight: FontWeight.w400,
                       fontSize: 12,
                       color: Colors.black,
                     ),
@@ -66,7 +66,7 @@ class AvailabilityRow extends StatelessWidget {
 
             const SizedBox(width: 12),
 
-            // Botón Editar a la derecha (100x20)
+            // Botón Editar a la derecha
             _EditButton(onTap: onEdit),
           ],
         ),
@@ -126,7 +126,7 @@ class _EditLabel extends StatelessWidget {
           'Editar',
           style: TextStyle(
             fontFamily: 'Roboto',
-            fontWeight: FontWeight.w400, // regular
+            fontWeight: FontWeight.w400,
             fontSize: 12,
             color: Colors.white,
           ),

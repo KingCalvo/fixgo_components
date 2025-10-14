@@ -45,7 +45,7 @@ class _PublishButtonState extends State<PublishButton> {
             elevation: 4,
             shadowColor: Colors.black.withValues(alpha: 0.35),
             child: InkWell(
-              onTap: widget.onPressed, // conecta navegación luego
+              onTap: widget.onPressed,
               onHighlightChanged: (v) => setState(() => _pressed = v),
               borderRadius: BorderRadius.circular(4),
               splashColor: Colors.white.withValues(alpha: 0.16),
@@ -59,7 +59,7 @@ class _PublishButtonState extends State<PublishButton> {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontFamily: 'Roboto',
-                      fontWeight: FontWeight.w600, // Semibold
+                      fontWeight: FontWeight.w600,
                       fontSize: 16,
                       color: widget.textColor,
                     ),

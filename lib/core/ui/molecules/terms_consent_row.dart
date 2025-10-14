@@ -1,12 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
-/// Fila de aceptación de términos:
-/// - Base 352×24, fondo blanco.
-/// - Izquierda: checkbox.
-/// - Derecha: texto "Al seleccionar la casilla, acepto los términos del servicio"
-///   con “términos del servicio” subrayado y clickable.
-/// - Componente CONTROLADO: el padre guarda `value` y procesa `onChanged`.
+// Componente CONTROLADO: el padre guarda value y procesa onChanged.
 class TermsConsentRow extends StatelessWidget {
   final bool value;
   final ValueChanged<bool>? onChanged;
@@ -54,12 +49,11 @@ class TermsConsentRow extends StatelessWidget {
                     const SizedBox(width: 8),
                     Expanded(
                       child: RichText(
-                        textScaleFactor:
-                            scale, // respeta escalado del contenedor
+                        textScaleFactor: scale,
                         text: TextSpan(
                           style: const TextStyle(
                             fontFamily: 'Roboto',
-                            fontWeight: FontWeight.w300, // Light
+                            fontWeight: FontWeight.w300,
                             fontSize: 10,
                             color: Color(0xFF212121),
                             height: 1.2,

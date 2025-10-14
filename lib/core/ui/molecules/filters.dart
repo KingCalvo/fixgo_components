@@ -1,28 +1,27 @@
 import 'package:flutter/material.dart';
 
-/// Variantes de filtro
+// Variantes de filtro
 enum FilterVariant { servicios, fecha, fechaMini, ubicacion }
 
-/// Widget único que dibuja el “pill” y abre un menú contextual con opciones.
-/// - No hace consultas. Sólo muestra/guarda la selección y emite onChanged.
-/// - Usa Material 3 (MenuAnchor/SubmenuButton). En tu MaterialApp activa useMaterial3: true.
+// Widget único que dibuja el “pill” y abre un menú contextual con opciones.
+// No hace consultas. Sólo muestra/guarda la selección y emite onChanged.
 class FilterPill extends StatefulWidget {
   final FilterVariant variant;
 
-  /// Callback para informar selección (clave/valor).
-  /// - servicios:    key='servicio',    value=p.ej. 'Pintura'
-  /// - fecha/mini:   key='periodo',     value='Hoy'|'Esta semana'|'Este mes'
-  /// - ubicación:    key='estado' o 'municipio', value=nombre
+  // Callback para informar selección (clave/valor).
+  // servicios:    key='servicio',    value=p.ej. 'Pintura'
+  // fecha/mini:   key='periodo',     value='Hoy'|'Esta semana'|'Este mes'
+  // ubicación:    key='estado' o 'municipio', value=nombre
   final void Function(FilterVariant variant, String key, String value)?
   onChanged;
 
-  /// Listas opcionales (si no mandas, uso defaults de mock).
+  /// Listas opcionales
   final List<String>? serviceOptions;
   final List<String>? dateOptions;
   final List<String>? states;
   final List<String>? municipalities;
 
-  /// Si true, el label muestra lo elegido (p.ej. "Servicios: Pintura")
+  /// Si true, el label muestra lo elegido (ej. "Servicios: Pintura")
   final bool showSelectionInLabel;
 
   const FilterPill({
@@ -220,11 +219,7 @@ class _FilterPillState extends State<FilterPill> {
               (p) => MenuItemButton(
                 onPressed: () {
                   setState(() => _selectedPeriod = p);
-                  widget.onChanged?.call(
-                    widget.variant, // fecha o fechaMini
-                    'periodo',
-                    p,
-                  );
+                  widget.onChanged?.call(widget.variant, 'periodo', p);
                   _controller.close();
                 },
                 child: Text(

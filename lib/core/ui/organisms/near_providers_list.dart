@@ -221,7 +221,7 @@ class _ProviderRow extends StatelessWidget {
   }
 }
 
-/// --- Estrellas de calificación ---
+// Estrellas de calificación
 class _StarsRow extends StatelessWidget {
   final double rating;
   const _StarsRow({required this.rating});

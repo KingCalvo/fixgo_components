@@ -55,7 +55,7 @@ class AppTopBar extends StatelessWidget {
     );
   }
 
-  // Menú hamburguesa por rol
+  // Menú por rol
   List<_MenuEntry> _menuItemsForRole(AppUserRole r) {
     switch (r) {
       case AppUserRole.cliente:
@@ -105,7 +105,7 @@ class AppTopBar extends StatelessWidget {
   }
 }
 
-/// Icono que abre un menú usando MenuAnchor (abre/cierra 100% seguro)
+/// Icono que abre un menú usando MenuAnchor
 class _AnchorMenuIcon extends StatefulWidget {
   final IconData icon;
   final double size;
@@ -151,13 +151,8 @@ class _AnchorMenuIconState extends State<_AnchorMenuIcon> {
                 _controller.close();
               },
               child: const SizedBox(
-                width: 160, // ancho cómodo para el texto
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    '', // el texto lo ponemos en el label abajo
-                  ),
-                ),
+                width: 160,
+                child: Align(alignment: Alignment.centerLeft, child: Text('')),
               ),
               style: ButtonStyle(
                 alignment: Alignment.centerLeft,
@@ -184,7 +179,7 @@ class _AnchorMenuIconState extends State<_AnchorMenuIcon> {
               children: [
                 btn,
                 Positioned.fill(
-                  left: 44, // deja espacio del icono
+                  left: 44,
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(

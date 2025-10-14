@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Datos expuestos a Presentación
+// Datos expuestos a Presentación
 class ServiceCategorySelector extends StatefulWidget {
   final List<String> options;
 
@@ -95,7 +95,7 @@ class _ServiceCategorySelectorState extends State<ServiceCategorySelector> {
                   'Selecciona la o las categorías',
                   style: TextStyle(
                     fontFamily: 'Roboto',
-                    fontWeight: FontWeight.w800, // ExtraBold
+                    fontWeight: FontWeight.w800,
                     fontSize: 20,
                     color: Colors.black,
                   ),
@@ -151,7 +151,7 @@ class _ServiceCategorySelectorState extends State<ServiceCategorySelector> {
                       .toList(),
                   onChanged: (val) {
                     setState(() => _pendingAdd = val);
-                    _addSelected(); // añade al momento de elegir
+                    _addSelected();
                   },
                 ),
 
@@ -200,7 +200,7 @@ class _MiniCategoryCard extends StatelessWidget {
       shadowColor: Colors.black.withValues(alpha: 0.18),
       child: InkWell(
         borderRadius: BorderRadius.circular(8),
-        onTap: onRemove, // tap para eliminar (también hay X)
+        onTap: onRemove, // tap para eliminar
         child: Container(
           constraints: const BoxConstraints(minWidth: 110, minHeight: 40),
           padding: const EdgeInsets.symmetric(horizontal: 10),

@@ -9,7 +9,7 @@ class ProposedDatePicker extends StatefulWidget {
   final DateTime firstDate;
   final DateTime lastDate;
 
-  /// Dimensiones base (responsivo)
+  /// Dimensiones base
   final double baseWidth;
   final EdgeInsetsGeometry padding;
 
@@ -37,7 +37,7 @@ class _ProposedDatePickerState extends State<ProposedDatePicker> {
   void initState() {
     super.initState();
     _selected = widget.initialDate;
-    // Cargamos datos de localización sin tocar main.dart
+    // Cargamos datos de localización
     initializeDateFormatting('es_MX', null).then((_) {
       Intl.defaultLocale = 'es_MX';
       if (mounted) setState(() => _intlReady = true);
@@ -92,14 +92,14 @@ class _ProposedDatePickerState extends State<ProposedDatePicker> {
                 'Fecha (propuesta)',
                 style: TextStyle(
                   fontFamily: 'Roboto',
-                  fontWeight: FontWeight.w800, // ExtraBold
+                  fontWeight: FontWeight.w800,
                   fontSize: 20,
                   color: Colors.black,
                 ),
               ),
               const SizedBox(height: 10),
 
-              // “Input” con ícono de calendar que abre el modal
+              //Input con ícono de calendar que abre el modal
               Material(
                 color: const Color(0xFFEDE8F0),
                 borderRadius: BorderRadius.circular(12),
@@ -155,7 +155,7 @@ class _ProposedDatePickerState extends State<ProposedDatePicker> {
   }
 }
 
-/// Bottom sheet con el calendario
+// Bottom sheet con el calendario
 class _CalendarSheet extends StatefulWidget {
   final DateTime initial;
   final DateTime firstDate;
@@ -185,7 +185,7 @@ class _CalendarSheetState extends State<_CalendarSheet> {
   @override
   Widget build(BuildContext context) {
     final media = MediaQuery.of(context);
-    final sheetHeight = media.size.height * 0.60; // 60% de alto
+    final sheetHeight = media.size.height * 0.60;
 
     return AnimatedPadding(
       duration: const Duration(milliseconds: 180),
@@ -263,7 +263,7 @@ class _CalendarSheetState extends State<_CalendarSheet> {
                       lastDay: widget.lastDate,
                       focusedDay: _focused,
                       availableGestures: AvailableGestures.horizontalSwipe,
-                      headerVisible: false, // usamos header propio
+                      headerVisible: false,
                       daysOfWeekStyle: const DaysOfWeekStyle(
                         weekendStyle: TextStyle(
                           color: Color(0xFF1F3C88),
@@ -388,7 +388,7 @@ class _PrimaryButtonState extends State<_PrimaryButton> {
   }
 }
 
-/// Botón circular para iconos del header del sheet (e.g. cerrar)
+/// Botón circular para iconos del header
 class _CircleIconButton extends StatefulWidget {
   final IconData icon;
   final VoidCallback? onTap;

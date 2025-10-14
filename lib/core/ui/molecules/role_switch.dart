@@ -2,12 +2,7 @@ import 'package:flutter/material.dart';
 
 enum RoleSwitchValue { cliente, proveedor }
 
-/// Switch de dos posiciones: Cliente / Proveedor
-/// - Base 352×35 (responsivo con escalado interno)
-/// - Fondo blanco, radio 8, drop shadow
-/// - Segmento seleccionado en #F86117; el otro en blanco
-/// - Textos configurables; por defecto Roboto Regular 16
-/// - Pensado para usarse desde Presentación: recibe [value] y notifica [onChanged]
+// Switch de dos posiciones: Cliente / Proveedor
 class RoleSwitch extends StatefulWidget {
   final RoleSwitchValue value;
   final ValueChanged<RoleSwitchValue>? onChanged;
@@ -15,16 +10,14 @@ class RoleSwitch extends StatefulWidget {
   final String leftLabel; // "Cliente"
   final String rightLabel; // "Proveedor"
 
-  /// Estilo/colores
-  final Color backgroundColor; // contenedor
-  final Color selectedColor; // segmento seleccionado
-  final Color unselectedColor; // segmento no seleccionado
+  final Color backgroundColor;
+  final Color selectedColor;
+  final Color unselectedColor;
   final Color selectedTextColor;
   final Color unselectedTextColor;
 
-  /// Dimensiones base
-  final double baseWidth; // 352
-  final double baseHeight; // 35
+  final double baseWidth;
+  final double baseHeight;
   final double borderRadius;
 
   const RoleSwitch({
@@ -37,7 +30,7 @@ class RoleSwitch extends StatefulWidget {
     this.selectedColor = const Color(0xFFF86117),
     this.unselectedColor = const Color(0xFFFFFFFF),
     this.selectedTextColor = const Color(0xFFFFFFFF),
-    this.unselectedTextColor = const Color(0xFF424242), // legible sobre blanco
+    this.unselectedTextColor = const Color(0xFF424242),
     this.baseWidth = 352,
     this.baseHeight = 35,
     this.borderRadius = 8,
@@ -82,7 +75,7 @@ class _RoleSwitchState extends State<RoleSwitch> {
                 borderRadius: BorderRadius.circular(widget.borderRadius),
                 boxShadow: const [
                   BoxShadow(
-                    color: Color(0x33000000), // negro 20%
+                    color: Color(0x33000000),
                     blurRadius: 12,
                     offset: Offset(0, 6),
                   ),
@@ -92,7 +85,7 @@ class _RoleSwitchState extends State<RoleSwitch> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // ===== Lado IZQUIERDO (Cliente) =====
+                  //Cliente
                   _Segment(
                     label: widget.leftLabel,
                     selected: isLeftSelected,
@@ -110,7 +103,7 @@ class _RoleSwitchState extends State<RoleSwitch> {
                     ),
                   ),
 
-                  // ===== Lado DERECHO (Proveedor) =====
+                  //Proveedor
                   _Segment(
                     label: widget.rightLabel,
                     selected: !isLeftSelected,
@@ -186,7 +179,7 @@ class _Segment extends StatelessWidget {
                 label,
                 style: const TextStyle(
                   fontFamily: 'Roboto',
-                  fontWeight: FontWeight.w400, // Regular
+                  fontWeight: FontWeight.w400,
                   fontSize: 16,
                 ).copyWith(color: fg),
               ),

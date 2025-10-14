@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 /// Barra de información con título centrado y botón Back.
 /// - El botón back expone callback para conectarlo en Presentación.
 class InfoBar extends StatelessWidget {
-  final String title; // ej: "Servicios"
-  final VoidCallback? onBack; // prep para navegación futura
+  final String title;
+  final VoidCallback? onBack;
   final double height;
   final EdgeInsets padding;
 
@@ -25,7 +25,7 @@ class InfoBar extends StatelessWidget {
       child: SafeArea(
         bottom: false,
         child: SizedBox(
-          width: double.infinity, // ocupa todo el ancho
+          width: double.infinity,
           height: height,
           child: Padding(
             padding: padding,
@@ -46,7 +46,7 @@ class InfoBar extends StatelessWidget {
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontFamily: 'Roboto',
-                      fontWeight: FontWeight.w400, // Regular
+                      fontWeight: FontWeight.w400,
                       fontSize: 24,
                       color: Colors.black,
                     ),
@@ -80,12 +80,12 @@ class _BackIconButtonState extends State<_BackIconButton> {
       duration: const Duration(milliseconds: 90),
       curve: Curves.easeOut,
       child: InkResponse(
-        radius: 24, // ripple
-        onTap: widget.onTap, // se conectará luego
+        radius: 24,
+        onTap: widget.onTap,
         onHighlightChanged: (v) => setState(() => _pressed = v),
         child: SizedBox(
           width: 44,
-          height: 44, // área táctil
+          height: 44,
           child: Icon(
             Icons.arrow_back,
             size: widget.iconSize,
