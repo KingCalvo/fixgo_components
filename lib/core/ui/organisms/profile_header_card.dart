@@ -1,52 +1,140 @@
 import 'package:flutter/material.dart';
 
+/// DTO para hidratar el widget desde la capa de Presentación.
+/// (Rellénalo desde tu ViewModel/Controller con datos de Supabase/Firebase)
+class ProviderProfileHeaderData {
+  final String name; // p.ej. "Juan Pérez"  (Supabase)
+  final double rating; // p.ej. 4.9           (Supabase)
+  final int reviews; // p.ej. 88            (Supabase)
+  final String imageUrl; // p.ej. URL Firebase Storage
+
+  const ProviderProfileHeaderData({
+    required this.name,
+    required this.rating,
+    required this.reviews,
+    required this.imageUrl,
+  });
+}
+
+/// Card de cabecera de perfil (412×319 base) con gradiente y acciones.
 class ProfileHeaderCard extends StatelessWidget {
-  final String name;
-  final double rating; // ej. 4.9
-  final int reviews; // ej. 88
-  final String imageUrl;
+  /// Datos que vienen de tu capa de Presentación.
+  final ProviderProfileHeaderData data;
+
+  /// Callbacks (navegación/acciones) — implementación desde Presentación.
   final VoidCallback? onBack;
   final VoidCallback? onSettings;
 
+  /// Colores configurables (defaults según especificación).
+  final Color topColor;
+  final Color bottomColor;
+
+  /// Si quieres forzar ancho/alto; si no, el widget escala responsivamente
+  /// dentro de su contenedor usando 412×319 como referencia.
+  final double baseWidth;
+  final double baseHeight;
+
   const ProfileHeaderCard({
     Key? key,
-    this.name = 'Juan Perez',
-    this.rating = 4.9,
-    this.reviews = 88,
-    this.imageUrl = 'https://picsum.photos/400',
+    required this.data,
     this.onBack,
     this.onSettings,
+    this.topColor = const Color(0xFF1F3C88),
+    this.bottomColor = const Color(0xFF080F22),
+    this.baseWidth = 412,
+    this.baseHeight = 319,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    const Color topColor = Color(0xFF1F3C88);
-    const Color bottomColor = Color(0xFF080F22);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Calcula factor de escala para mantener proporción base 412×319.
+        final double w = constraints.maxWidth.isFinite
+            ? constraints.maxWidth
+            : baseWidth;
+        final double h = constraints.maxHeight.isFinite
+            ? constraints.maxHeight
+            : baseHeight;
 
-    return SizedBox(
-      width: 412,
-      height: 319,
+        // Si el padre no fija alto, usamos el alto base.
+        final bool heightUnbounded = !constraints.hasBoundedHeight;
+        final double width = w == 0 ? baseWidth : w;
+        final double height = heightUnbounded
+            ? baseHeight
+            : (h == 0 ? baseHeight : h);
+
+        // Escala respecto a dimensiones base
+        final double scaleX = width / baseWidth;
+        final double scaleY = height / baseHeight;
+        final double scale = scaleX < scaleY ? scaleX : scaleY;
+
+        return Center(
+          child: SizedBox(
+            width: baseWidth * scale,
+            height: baseHeight * scale,
+            child: _ProfileHeaderContent(
+              data: data,
+              onBack: onBack,
+              onSettings: onSettings,
+              topColor: topColor,
+              bottomColor: bottomColor,
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _ProfileHeaderContent extends StatelessWidget {
+  final ProviderProfileHeaderData data;
+  final VoidCallback? onBack;
+  final VoidCallback? onSettings;
+  final Color topColor;
+  final Color bottomColor;
+
+  const _ProfileHeaderContent({
+    required this.data,
+    required this.onBack,
+    required this.onSettings,
+    required this.topColor,
+    required this.bottomColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      // permite ripple en overlay
+      color: Colors.transparent,
       child: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [topColor, bottomColor],
           ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 12,
+              offset: Offset(0, 6),
+            ),
+          ],
         ),
+        clipBehavior: Clip.antiAlias,
         child: Stack(
           children: [
-            // Iconos top-left (back) y top-right (settings) usando el botón animado
+            // Acciones superiores
             Positioned(
               left: 8,
               top: 8,
               child: SafeArea(
-                child: _AnimatedIconButton(
+                child: _ActionIcon(
                   icon: Icons.arrow_back,
-                  size: 32,
-                  color: Colors.white,
-                  onPressed: onBack,
                   tooltip: 'Volver',
+                  onTap: onBack,
                 ),
               ),
             ),
@@ -54,32 +142,37 @@ class ProfileHeaderCard extends StatelessWidget {
               right: 8,
               top: 8,
               child: SafeArea(
-                child: _AnimatedIconButton(
+                child: _ActionIcon(
                   icon: Icons.settings,
-                  size: 32,
-                  color: Colors.white,
-                  onPressed: onSettings,
                   tooltip: 'Ajustes',
+                  onTap: onSettings,
                 ),
               ),
             ),
 
-            // Contenido centrado (foto, nombre, estrellas, textos)
+            // Contenido central
             Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Foto con marco blanco (130x130)
+                  // Avatar 130×130 con borde blanco 6
                   Container(
                     width: 130,
                     height: 130,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.white, width: 6),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 10,
+                          offset: Offset(0, 6),
+                        ),
+                      ],
                     ),
                     child: ClipOval(
                       child: Image.network(
-                        imageUrl,
+                        data.imageUrl,
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) => Container(
                           color: Colors.grey.shade300,
@@ -95,47 +188,54 @@ class ProfileHeaderCard extends StatelessWidget {
 
                   const SizedBox(height: 12),
 
-                  // Nombre
+                  // Nombre (Roboto regular 20)
                   Text(
-                    name,
+                    data.name,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontFamily: 'Roboto',
                       fontSize: 20,
-                      fontWeight: FontWeight.w400, // regular
+                      fontWeight: FontWeight.w400,
                       color: Colors.white,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black26,
+                          blurRadius: 6,
+                          offset: Offset(0, 1),
+                        ),
+                      ],
                     ),
                   ),
 
                   const SizedBox(height: 12),
 
-                  // Estrellas (5 icons de 24, gap 10)
-                  _buildStarsRow(rating),
+                  // Estrellas 24 con gap 10
+                  _StarsRow(rating: data.rating),
 
                   const SizedBox(height: 10),
 
-                  // "4.9 Calificación"
+                  // "4.9 Calificación" (Roboto light 15)
                   Text(
-                    '${rating.toStringAsFixed(1)} Calificación',
+                    '${data.rating.toStringAsFixed(1)} Calificación',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontFamily: 'Roboto',
                       fontSize: 15,
-                      fontWeight: FontWeight.w300, // light
+                      fontWeight: FontWeight.w300,
                       color: Colors.white,
                     ),
                   ),
 
                   const SizedBox(height: 4),
 
-                  // "88 reseñas"
+                  // "88 Reseñas" (Roboto light 15)
                   Text(
-                    '$reviews Reseñas',
+                    '${data.reviews} Reseñas',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontFamily: 'Roboto',
                       fontSize: 15,
-                      fontWeight: FontWeight.w300, // light
+                      fontWeight: FontWeight.w300,
                       color: Colors.white,
                     ),
                   ),
@@ -147,118 +247,93 @@ class ProfileHeaderCard extends StatelessWidget {
       ),
     );
   }
-
-  // Construye la fila de estrellas con lógica full/half/outline
-  Widget _buildStarsRow(double rating) {
-    final int full = rating.floor();
-    final bool hasHalf = (rating - full) >= 0.5;
-    const double starSize = 24;
-    const double gap = 10;
-
-    List<Widget> stars = [];
-    for (int i = 0; i < 5; i++) {
-      Widget star;
-      if (i < full) {
-        star = const Icon(
-          Icons.star,
-          size: starSize,
-          color: Color(0xFFFFC107),
-        ); // amarillo
-      } else if (i == full && hasHalf) {
-        star = const Icon(
-          Icons.star_half,
-          size: starSize,
-          color: Color(0xFFFFC107),
-        );
-      } else {
-        star = const Icon(
-          Icons.star_border,
-          size: starSize,
-          color: Color(0xFFFFC107),
-        );
-      }
-
-      stars.add(star);
-      if (i != 4) stars.add(const SizedBox(width: gap));
-    }
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: stars,
-    );
-  }
 }
 
-/// Botón con animación de escala cuando se presiona.
-/// - Muestra el icono en el color dado (por defecto blanco).
-/// - Llama a `onPressed` si no es null.
-/// - Si `onPressed` es null: no ejecuta acción, pero la animación sigue (útil para ver efecto).
-class _AnimatedIconButton extends StatefulWidget {
+/// Botón circular con ripple, animación de escala y ligera elevación.
+class _ActionIcon extends StatefulWidget {
   final IconData icon;
-  final double size;
-  final Color color;
-  final VoidCallback? onPressed;
-  final String? tooltip;
+  final String tooltip;
+  final VoidCallback? onTap;
 
-  const _AnimatedIconButton({
-    Key? key,
-    required this.icon,
-    this.size = 24,
-    this.color = Colors.white,
-    this.onPressed,
-    this.tooltip,
-  }) : super(key: key);
+  const _ActionIcon({required this.icon, required this.tooltip, this.onTap});
 
   @override
-  State<_AnimatedIconButton> createState() => _AnimatedIconButtonState();
+  State<_ActionIcon> createState() => _ActionIconState();
 }
 
-class _AnimatedIconButtonState extends State<_AnimatedIconButton>
-    with SingleTickerProviderStateMixin {
-  // Usamos AnimatedScale para animación suave
+class _ActionIconState extends State<_ActionIcon> {
   bool _pressed = false;
-
-  void _handleTapDown(_) {
-    setState(() => _pressed = true);
-  }
-
-  void _handleTapUp(_) async {
-    // breve delay para que la animación sea perceptible
-    setState(() => _pressed = false);
-    // ejecuta la acción (si hay)
-    if (widget.onPressed != null) {
-      widget.onPressed!.call();
-    }
-  }
-
-  void _handleTapCancel() {
-    setState(() => _pressed = false);
-  }
 
   @override
   Widget build(BuildContext context) {
-    final double scale = _pressed ? 0.88 : 1.0;
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTapDown: _handleTapDown,
-      onTapUp: _handleTapUp,
-      onTapCancel: _handleTapCancel,
+    final double scale = _pressed ? 0.9 : 1.0;
+
+    return Semantics(
+      button: true,
+      label: widget.tooltip,
       child: AnimatedScale(
         scale: scale,
-        duration: const Duration(milliseconds: 120),
+        duration: const Duration(milliseconds: 100),
         curve: Curves.easeOut,
-        child: Semantics(
-          button: true,
-          label: widget.tooltip,
-          child: Container(
-            width: widget.size + 16, // área táctil un poco más grande
-            height: widget.size + 16,
-            alignment: Alignment.center,
-            child: Icon(widget.icon, size: widget.size, color: widget.color),
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: widget.onTap,
+          onHighlightChanged: (v) => setState(() => _pressed = v),
+          splashColor: Colors.white.withValues(alpha: 0.25),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Icon(
+              widget.icon,
+              size: 28,
+              color: Colors.white,
+              shadows: const [
+                Shadow(
+                  color: Colors.black54,
+                  blurRadius: 4,
+                  offset: Offset(0, 1),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
+  }
+}
+
+extension on _ActionIconState {
+  // Reemplazamos el icono con overlay para dibujar blanco con “sombra suave”.
+  // (Helper para mantener el Material circular anterior)
+  Widget get _iconStack =>
+      Stack(alignment: Alignment.center, children: const []);
+}
+
+/// Fila de 5 estrellas con soporte full/half/outline (24px, gap 10)
+class _StarsRow extends StatelessWidget {
+  final double rating;
+  const _StarsRow({required this.rating});
+
+  @override
+  Widget build(BuildContext context) {
+    const double starSize = 24;
+    const double gap = 10;
+    final int full = rating.floor();
+    final bool hasHalf = (rating - full) >= 0.5;
+
+    List<Widget> stars = [];
+    for (int i = 0; i < 5; i++) {
+      IconData icon;
+      if (i < full) {
+        icon = Icons.star;
+      } else if (i == full && hasHalf) {
+        icon = Icons.star_half;
+      } else {
+        icon = Icons.star_border;
+      }
+      stars.add(Icon(icon, size: starSize, color: const Color(0xFFFFC107)));
+      if (i != 4) stars.add(const SizedBox(width: gap));
+    }
+
+    return Row(mainAxisSize: MainAxisSize.min, children: stars);
   }
 }
