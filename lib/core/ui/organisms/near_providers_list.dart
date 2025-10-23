@@ -42,7 +42,7 @@ class NearbyProvidersCard extends StatelessWidget {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
+            color: Colors.black.withValues(alpha: 0.10),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -116,7 +116,7 @@ class _ProviderRow extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Imagen circular
+            // Avatar circular
             ClipOval(
               child: Image.network(
                 provider.photoUrl,
@@ -129,10 +129,12 @@ class _ProviderRow extends StatelessWidget {
             ),
             const SizedBox(width: 8),
 
+            // Info (nombre, ubicación, distancia, estrellas)
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Nombre
                   Text(
                     provider.name,
                     style: const TextStyle(
@@ -141,35 +143,39 @@ class _ProviderRow extends StatelessWidget {
                       fontSize: 15,
                       color: Colors.black,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
+
                   const SizedBox(height: 2),
-                  Row(
-                    children: [
-                      Text(
-                        provider.location,
-                        style: const TextStyle(
-                          fontFamily: 'Roboto',
-                          fontWeight: FontWeight.w400,
-                          fontSize: 13,
-                          color: Colors.black,
-                        ),
-                      ),
-                      const Text(
-                        " → ",
-                        style: TextStyle(fontSize: 13, color: Colors.black),
-                      ),
-                      Text(
-                        "${provider.distanceKm.toStringAsFixed(1)} km",
-                        style: const TextStyle(
-                          fontFamily: 'Roboto',
-                          fontWeight: FontWeight.w400,
-                          fontSize: 13,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ],
+
+                  // Ubicación (línea 1)
+                  Text(
+                    provider.location,
+                    style: const TextStyle(
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.w400,
+                      fontSize: 13,
+                      color: Colors.black,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
+
+                  // Distancia (línea 2)
+                  Text(
+                    "${provider.distanceKm.toStringAsFixed(1)} km",
+                    style: const TextStyle(
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.w400,
+                      fontSize: 13,
+                      color: Colors.black,
+                    ),
+                  ),
+
                   const SizedBox(height: 3),
+
+                  // Estrellas
                   _StarsRow(rating: provider.rating),
                 ],
               ),
@@ -177,36 +183,53 @@ class _ProviderRow extends StatelessWidget {
 
             const SizedBox(width: 8),
 
-            // Categorías (iconos)
-            Row(
-              children: [
-                for (int i = 0; i < provider.categories.length; i++) ...[
-                  Container(
-                    width: 38,
-                    height: 27,
-                    margin: EdgeInsets.only(
-                      right: i != provider.categories.length - 1 ? 11 : 0,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: const Color(0xFFC3C0C0)),
-                    ),
-                    child: Image.asset(
-                      'assets/${provider.categories[i]}.png',
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) =>
-                          const Icon(Icons.image, color: Colors.grey, size: 20),
-                    ),
+            // Contenedor flexible de categorías (scroll horizontal si no caben)
+            Flexible(
+              flex: 0,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  // deja respirar al texto; ajusta si quieres más/menos espacio
+                  maxWidth: 120,
+                ),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      for (int i = 0; i < provider.categories.length; i++) ...[
+                        Container(
+                          width: 38,
+                          height: 27,
+                          margin: EdgeInsets.only(
+                            right: i != provider.categories.length - 1 ? 11 : 0,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: const Color(0xFFC3C0C0)),
+                          ),
+                          child: Image.asset(
+                            'assets/${provider.categories[i]}.png',
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, __, ___) => const Icon(
+                              Icons.image,
+                              color: Colors.grey,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
-                ],
-              ],
+                ),
+              ),
             ),
 
-            const SizedBox(width: 10),
+            const SizedBox(width: 6),
 
             // Flecha “>”
             IconButton(
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
               onPressed: onTap,
               icon: const Icon(
                 Icons.chevron_right,

@@ -128,10 +128,10 @@ class ServiceRequestCard extends StatelessWidget {
   });
 
   double _computedBaseHeight() {
-    if (variant == ServiceCardVariant.solicitud) return 470;
+    if (variant == ServiceCardVariant.solicitud) return 480;
     if (variant == ServiceCardVariant.propuesta) return 550;
-    if (data.serviceStatus == ServiceStatus.finalizado) return 450;
-    if (data.serviceStatus == ServiceStatus.cancelado) return 440;
+    if (data.serviceStatus == ServiceStatus.finalizado) return 460;
+    if (data.serviceStatus == ServiceStatus.cancelado) return 446;
     return 609;
   }
 
@@ -575,6 +575,7 @@ class ServiceRequestCard extends StatelessWidget {
         return totalRow;
       }
 
+      // Activo: incluye divider inferior
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [totalRow, const SizedBox(height: 6), const _Divider382()],
@@ -849,7 +850,7 @@ class _StarsRow extends StatelessWidget {
         color = const Color(0xFFFFC107);
       } else {
         icon = Icons.star_border;
-        color = Colors.black87;
+        color = Colors.black87; // contorno visible
       }
       stars.add(Icon(icon, size: size, color: color));
       if (i != 4) stars.add(SizedBox(width: gap));
