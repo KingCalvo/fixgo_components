@@ -24,34 +24,27 @@ class JobLocationData {
   );
 }
 
+/// Firma para tu geocodificador externo
+typedef AddressResolver = Future<LatLng?> Function(String address);
+
 class JobLocationSection extends StatefulWidget {
   final JobLocationData data;
 
-  /// Te avisa cada vez que el usuario escribe (para autocompletar, etc.)
+  /// Resolver de direcciones: coordenadas que provees desde otra capa.
+  /// Si es null, el widget no intentará geocodificar.
+  final AddressResolver? resolveAddress;
+
   final ValueChanged<String>? onAddressChanged;
-
-  /// Te avisa cuando el usuario “confirma” (Enter o tap en el ícono).
-  /// Aquí conectas tu geocodificador y luego puedes llamar a [onUpdateFromOutside].
   final ValueChanged<String>? onAddressSubmitted;
-
-  /// Te avisa si el usuario toca el mapa (para mover el pin).
   final ValueChanged<LatLng>? onMapTap;
-
-  /// Si quieres un botón de “mi ubicación” (opcional).
-  final VoidCallback? onMyLocation;
-
-  /// Permite que capas superiores actualicen el widget (texto/marker)
-  /// tras una geocodificación externa.
-  final void Function(JobLocationData data)? onUpdateFromOutside;
 
   const JobLocationSection({
     super.key,
     required this.data,
+    this.resolveAddress,
     this.onAddressChanged,
     this.onAddressSubmitted,
     this.onMapTap,
-    this.onMyLocation,
-    this.onUpdateFromOutside,
   });
 
   @override
@@ -59,8 +52,10 @@ class JobLocationSection extends StatefulWidget {
 }
 
 class _JobLocationSectionState extends State<JobLocationSection> {
-  late final TextEditingController _ctrl;
   late JobLocationData _state;
+  late final TextEditingController _ctrl;
+  final MapController _mapController = MapController();
+  bool _resolving = false;
 
   @override
   void initState() {
@@ -72,7 +67,7 @@ class _JobLocationSectionState extends State<JobLocationSection> {
   @override
   void didUpdateWidget(covariant JobLocationSection oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Si desde fuera te envían un nuevo estado, reflejarlo
+    // Si desde arriba cambian el estado, reflejarlo
     if (oldWidget.data.addressText != widget.data.addressText ||
         oldWidget.data.point != widget.data.point) {
       _state = widget.data;
@@ -82,14 +77,37 @@ class _JobLocationSectionState extends State<JobLocationSection> {
           offset: widget.data.addressText.length,
         ),
       );
+      // mueve el mapa al nuevo punto
+      _mapController.move(_state.point, 15);
       setState(() {});
     }
   }
 
-  void _submit() {
-    final text = _ctrl.text.trim();
-    widget.onAddressSubmitted?.call(text);
-    // No movemos el mapa aquí: déjalo al resultado de tu geocodificación
+  Future<void> _submit() async {
+    final address = _ctrl.text.trim();
+    widget.onAddressSubmitted?.call(address);
+    if (widget.resolveAddress == null || address.isEmpty) return;
+
+    setState(() => _resolving = true);
+    try {
+      final LatLng? result = await widget.resolveAddress!(address);
+      if (result != null) {
+        setState(() {
+          _state = _state.copyWith(addressText: address, point: result);
+        });
+        _mapController.move(result, 15);
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              const SnackBar(content: Text('No se encontró esa ubicación')),
+            );
+        }
+      }
+    } finally {
+      if (mounted) setState(() => _resolving = false);
+    }
   }
 
   @override
@@ -111,7 +129,6 @@ class _JobLocationSectionState extends State<JobLocationSection> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Título
             Text(
               _state.title,
               style: const TextStyle(
@@ -123,7 +140,7 @@ class _JobLocationSectionState extends State<JobLocationSection> {
             ),
             const SizedBox(height: 8),
 
-            // Input (editable) + botón de acción
+            // Input de dirección + botón buscar
             SizedBox(
               height: 40,
               child: TextField(
@@ -152,23 +169,21 @@ class _JobLocationSectionState extends State<JobLocationSection> {
                     borderRadius: BorderRadius.circular(8),
                     borderSide: const BorderSide(color: Color(0xFFBDBDBD)),
                   ),
-                  suffixIcon: _AnimatedIconBtn(
-                    icon: Icons.search_rounded,
-                    onTap: _submit,
-                  ),
+                  suffixIcon: _SearchIcon(loading: _resolving, onTap: _submit),
                 ),
               ),
             ),
 
             const SizedBox(height: 10),
 
-            // Mapa
+            // Mapa con pin
             SizedBox(
               width: double.infinity,
               height: 170,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: FlutterMap(
+                  mapController: _mapController,
                   options: MapOptions(
                     initialCenter: _state.point,
                     initialZoom: 15,
@@ -210,16 +225,16 @@ class _JobLocationSectionState extends State<JobLocationSection> {
   }
 }
 
-class _AnimatedIconBtn extends StatefulWidget {
-  final IconData icon;
+class _SearchIcon extends StatefulWidget {
+  final bool loading;
   final VoidCallback? onTap;
-  const _AnimatedIconBtn({required this.icon, this.onTap});
+  const _SearchIcon({required this.loading, this.onTap});
 
   @override
-  State<_AnimatedIconBtn> createState() => _AnimatedIconBtnState();
+  State<_SearchIcon> createState() => _SearchIconState();
 }
 
-class _AnimatedIconBtnState extends State<_AnimatedIconBtn>
+class _SearchIconState extends State<_SearchIcon>
     with SingleTickerProviderStateMixin {
   late final AnimationController _c = AnimationController(
     vsync: this,
@@ -238,6 +253,7 @@ class _AnimatedIconBtnState extends State<_AnimatedIconBtn>
 
   @override
   Widget build(BuildContext context) {
+    final bg = Colors.black.withValues(alpha: 0.06);
     return GestureDetector(
       onTapDown: (_) => _c.forward(),
       onTapUp: (_) {
@@ -249,11 +265,17 @@ class _AnimatedIconBtnState extends State<_AnimatedIconBtn>
         scale: _scale,
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.black.withValues(alpha: 0.06),
-          ),
-          child: Icon(widget.icon, color: Colors.black87),
+          decoration: BoxDecoration(shape: BoxShape.circle, color: bg),
+          child: widget.loading
+              ? const Padding(
+                  padding: EdgeInsets.all(10),
+                  child: SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                )
+              : const Icon(Icons.search_rounded, color: Colors.black87),
         ),
       ),
     );

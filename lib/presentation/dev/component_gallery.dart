@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:geocoding/geocoding.dart';
 import '../../core/ui/ui.dart';
 
 class ComponentGallery extends StatefulWidget {
@@ -549,32 +550,26 @@ class _ComponentGalleryState extends State<ComponentGallery> {
                   // Campo de ubicación del trabajo (JobLocationField)
                   const SizedBox(height: 24),
                   JobLocationSection(
-                    data: JobLocationData(
+                    data: const JobLocationData(
                       addressText: 'Ubicación actual / Yautepec Morelos',
                       point: LatLng(18.8836, -99.0667),
                     ),
-                    onAddressSubmitted: (txt) async {
-                      // Aquí harías geocoding; por ahora simulo coordenadas:
-                      final mock = txt.toLowerCase().contains('centro')
-                          ? const LatLng(18.9200, -99.2340)
-                          : const LatLng(18.8845, -99.0635);
-
-                      // Actualizar el widget: reconstruye con nuevos datos (desde tu estado padre)
-                      // En la gallery puedes simplemente mostrar un snackbar:
-                      ScaffoldMessenger.of(context)
-                        ..hideCurrentSnackBar()
-                        ..showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Buscar: $txt → (${mock.latitude.toStringAsFixed(4)}, ${mock.longitude.toStringAsFixed(4)})',
-                            ),
-                          ),
-                        );
+                    resolveAddress: (address) async {
+                      try {
+                        final list = await locationFromAddress(address);
+                        if (list.isNotEmpty) {
+                          final loc = list.first;
+                          return LatLng(loc.latitude, loc.longitude);
+                        }
+                        return null;
+                      } catch (e) {
+                        return null;
+                      }
                     },
-                    onMapTap: (p) {
-                      // Si el usuario toca el mapa, recibe LatLng aquí (guárdalo para enviar a Supabase)
-                      debugPrint('Nuevo punto: ${p.latitude}, ${p.longitude}');
-                    },
+                    onAddressSubmitted: (txt) => debugPrint('Buscar: $txt'),
+                    onMapTap: (p) => debugPrint(
+                      'Nuevo punto: ${p.latitude}, ${p.longitude}',
+                    ),
                   ),
                 ],
               ),

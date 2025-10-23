@@ -3,7 +3,6 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 
 // Input para formularios
 // Título configurable (por defecto: "Titulo del trabajo").
-// Campo de texto usando flutter_form_builder (look & feel moderno).
 // No hace llamadas a datos: emite cambios vía onChanged.
 // Requisitos:
 // flutter_form_builder: ^9.2.1 (o similar)
