@@ -91,7 +91,7 @@ class _ComponentGalleryState extends State<ComponentGallery> {
                   const SizedBox(height: 48),
 
                   // Logo + Slogan
-                  LogoSloganCard(logoAsset: 'assets/LogoNaranja.png'),
+                  LogoSloganCard(logoAsset: 'lib/assets/LogoNaranja.png'),
 
                   const SizedBox(height: 24),
 
@@ -103,7 +103,7 @@ class _ComponentGalleryState extends State<ComponentGallery> {
 
                   // Logo + Name
                   const SizedBox(height: 48),
-                  LogoNameCard(logoAsset: 'assets/LogoVerde.png'),
+                  LogoNameCard(logoAsset: 'lib/assets/LogoVerde.png'),
 
                   // Role Switch
                   const SizedBox(height: 24),
@@ -393,7 +393,7 @@ class _ComponentGalleryState extends State<ComponentGallery> {
                     data: const CategoryDiscountData(
                       percentText: '20 %',
                       subtitle: 'En categoría',
-                      imageUrl: 'https://picsum.photos/seed/garden/116',
+                      imageAsset: 'lib/assets/JardineriaCard.png',
                     ),
                   ),
 
@@ -472,7 +472,7 @@ class _ComponentGalleryState extends State<ComponentGallery> {
                   const SizedBox(height: 24),
                   PublishPromptCard(
                     data: const PublishPromptData(
-                      imageUrl: 'https://picsum.photos/seed/tool/120',
+                      imageAsset: 'lib/assets/PublicarCard.png',
                     ),
                   ),
 
@@ -581,7 +581,7 @@ class _ComponentGalleryState extends State<ComponentGallery> {
               bottom: 16,
               child: BotFab(
                 data: BotFabData(
-                  imageUrl: 'https://picsum.photos/seed/bot/120',
+                  imageAsset: 'lib/assets/bot.png',
                   onTap: () => _show(context, 'Abrir chat del bot'),
                 ),
               ),

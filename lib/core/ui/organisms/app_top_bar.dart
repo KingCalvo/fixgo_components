@@ -11,7 +11,7 @@ class AppTopBar extends StatelessWidget {
   const AppTopBar({
     super.key,
     required this.role,
-    this.logoAsset = 'assets/LogoNaranja.png',
+    this.logoAsset = 'lib/assets/LogoNaranja.png',
     this.onMenuSelected,
     this.onUserSelected,
   });
@@ -38,7 +38,11 @@ class AppTopBar extends StatelessWidget {
                   onSelected: onMenuSelected,
                 ),
                 const SizedBox(width: 10),
-                const _CompactLogo(width: 175, height: 45.5),
+                _CompactLogo(
+                  width: 175,
+                  height: 45.5,
+                  assetPath: logoAsset, // <- usar el parámetro del AppTopBar
+                ),
                 const Spacer(),
                 _AnchorMenuIcon(
                   tooltip: 'Cuenta',
@@ -216,7 +220,13 @@ class _AnchorMenuIconState extends State<_AnchorMenuIcon> {
 class _CompactLogo extends StatelessWidget {
   final double width;
   final double height;
-  const _CompactLogo({required this.width, required this.height});
+  final String assetPath; // <- nuevo
+
+  const _CompactLogo({
+    required this.width,
+    required this.height,
+    required this.assetPath, // <- nuevo
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -231,7 +241,7 @@ class _CompactLogo extends StatelessWidget {
             decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
             clipBehavior: Clip.antiAlias,
             child: Image.asset(
-              'assets/LogoNaranja.png',
+              assetPath, // <- usar la ruta recibida
               fit: BoxFit.cover,
               errorBuilder: (_, __, ___) =>
                   const Icon(Icons.build, color: Colors.white),
