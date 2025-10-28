@@ -161,7 +161,7 @@ class _ComponentGalleryState extends State<ComponentGallery> {
                       serviceNumber: '24569',
                       pStatus: ProposalStatus.pendiente,
                       estimated: '17:30 hrs',
-                      materialSource: 'Cliente',
+                      materialSource: 'Proveedor',
                     ),
                     proposalPendingView: ProposalPendingView.cliente,
                     onReject: () =>
@@ -229,7 +229,7 @@ class _ComponentGalleryState extends State<ComponentGallery> {
                       serviceNumber: '24571',
                       pStatus: ProposalStatus.pendiente,
                       estimated: '2 h',
-                      materialSource: 'Cliente',
+                      materialSource: 'Proveedor',
                       totalText: r'$900 MXN',
                     ),
                     proposalPendingView: ProposalPendingView.proveedor,
@@ -293,7 +293,7 @@ class _ComponentGalleryState extends State<ComponentGallery> {
                       serviceNumber: '24573',
                       pStatus: ProposalStatus.aceptada,
                       estimated: '1 h',
-                      materialSource: 'Cliente',
+                      materialSource: 'Proveedor',
                       totalText: r'$1000 MXN',
                     ),
                     onReject: () =>

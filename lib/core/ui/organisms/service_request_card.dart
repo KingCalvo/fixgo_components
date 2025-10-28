@@ -66,7 +66,7 @@ class ServiceRequestData {
   final String serviceType;
   final String title;
 
-  /// Origen del material ("Proveedor", "Cliente")
+  /// Origen del material ("Proveedor", "Propio")
   final String materialSource;
 
   final String location;
