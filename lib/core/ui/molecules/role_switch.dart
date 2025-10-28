@@ -16,6 +16,7 @@ class RoleSwitch extends StatefulWidget {
   final Color selectedTextColor;
   final Color unselectedTextColor;
 
+  /// Tamaño base (ahora más grande por defecto)
   final double baseWidth;
   final double baseHeight;
   final double borderRadius;
@@ -31,9 +32,9 @@ class RoleSwitch extends StatefulWidget {
     this.unselectedColor = const Color(0xFFFFFFFF),
     this.selectedTextColor = const Color(0xFFFFFFFF),
     this.unselectedTextColor = const Color(0xFF424242),
-    this.baseWidth = 352,
-    this.baseHeight = 35,
-    this.borderRadius = 8,
+    this.baseWidth = 392, // antes 352
+    this.baseHeight = 44, // antes 35
+    this.borderRadius = 10, // un poco más redondeado
   });
 
   @override
@@ -70,22 +71,17 @@ class _RoleSwitchState extends State<RoleSwitch> {
             width: width,
             height: height,
             child: Container(
+              // SIN sombra aquí (solo marco y fondo)
               decoration: BoxDecoration(
                 color: widget.backgroundColor,
                 borderRadius: BorderRadius.circular(widget.borderRadius),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x33000000),
-                    blurRadius: 12,
-                    offset: Offset(0, 6),
-                  ),
-                ],
+                border: Border.all(color: const Color(0xFFE0E0E0)),
               ),
               clipBehavior: Clip.antiAlias,
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  //Cliente
+                  // Cliente
                   _Segment(
                     label: widget.leftLabel,
                     selected: isLeftSelected,
@@ -103,7 +99,7 @@ class _RoleSwitchState extends State<RoleSwitch> {
                     ),
                   ),
 
-                  //Proveedor
+                  // Proveedor
                   _Segment(
                     label: widget.rightLabel,
                     selected: !isLeftSelected,
@@ -165,23 +161,41 @@ class _Segment extends StatelessWidget {
         scale: pressing ? 0.98 : 1.0,
         duration: const Duration(milliseconds: 90),
         curve: Curves.easeOut,
-        child: Material(
-          color: bg,
+        child: ClipRRect(
           borderRadius: borderRadius,
-          child: InkWell(
-            onTap: onTap,
-            onHighlightChanged: onHighlightChanged,
-            splashColor: Colors.white.withValues(alpha: 0.18),
-            highlightColor: Colors.white.withValues(alpha: 0.10),
-            borderRadius: borderRadius,
-            child: Center(
-              child: Text(
-                label,
-                style: const TextStyle(
-                  fontFamily: 'Roboto',
-                  fontWeight: FontWeight.w400,
-                  fontSize: 16,
-                ).copyWith(color: fg),
+          child: Container(
+            // SOMBRA SOLO CUANDO ESTÁ SELECCIONADO
+            decoration: BoxDecoration(
+              borderRadius: borderRadius,
+              boxShadow: selected
+                  ? const [
+                      BoxShadow(
+                        color: Color(0x33000000),
+                        blurRadius: 12,
+                        offset: Offset(0, 6),
+                      ),
+                    ]
+                  : null,
+            ),
+            child: Material(
+              color: bg,
+              borderRadius: borderRadius,
+              child: InkWell(
+                onTap: onTap,
+                onHighlightChanged: onHighlightChanged,
+                splashColor: Colors.white.withValues(alpha: 0.18),
+                highlightColor: Colors.white.withValues(alpha: 0.10),
+                borderRadius: borderRadius,
+                child: Center(
+                  child: Text(
+                    label,
+                    style: const TextStyle(
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.w500,
+                      fontSize: 17, // un poquito más grande
+                    ).copyWith(color: fg),
+                  ),
+                ),
               ),
             ),
           ),

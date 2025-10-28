@@ -190,7 +190,7 @@ class _ComponentGalleryState extends State<ComponentGallery> {
                     data: _baseData(
                       serviceNumber: '24570',
                       pStatus: ProposalStatus.pendiente,
-                      estimated: '1 h 40 min',
+                      estimated: '17:30',
                       materialSource: 'Proveedor',
                       totalText: r'$1200 MXN',
                     ),
@@ -228,8 +228,8 @@ class _ComponentGalleryState extends State<ComponentGallery> {
                     data: _baseData(
                       serviceNumber: '24571',
                       pStatus: ProposalStatus.pendiente,
-                      estimated: '2 h',
-                      materialSource: 'Proveedor',
+                      estimated: '17:30',
+                      materialSource: 'Propio',
                       totalText: r'$900 MXN',
                     ),
                     proposalPendingView: ProposalPendingView.proveedor,

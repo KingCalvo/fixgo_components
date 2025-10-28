@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'presentation/dev/component_gallery.dart';
+import 'presentation/dev/Hire_Service_Form_fx.dart';
 
 void main() {
   runApp(const MainApp());
@@ -14,7 +15,7 @@ class MainApp extends StatelessWidget {
     if (kDebugMode) {
       return const MaterialApp(
         debugShowCheckedModeBanner: true,
-        home: ComponentGallery(),
+        home: HireServiceForm(),
       );
     }
 

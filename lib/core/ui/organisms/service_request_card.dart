@@ -217,10 +217,34 @@ class _ServiceRequestCardState extends State<ServiceRequestCard> {
     if (widget.materialBySupplierOverride != null) {
       return widget.materialBySupplierOverride!;
     }
+
     final src = widget.data.materialSource.toLowerCase().trim();
-    return src.contains('proveedor') ||
-        src == 'propio' ||
-        src == 'del proveedor';
+
+    // TRUE solo si explícitamente dice proveedor
+    const proveedorKeys = [
+      'proveedor',
+      'del proveedor',
+      'por parte del proveedor',
+      'lo aporta el proveedor',
+      'incluye material',
+      'supplier',
+    ];
+
+    // Casos que deben ser SIEMPRE cliente (no mostrar input)
+    const clienteKeys = [
+      'propio',
+      'cliente',
+      'por parte del cliente',
+      'lo aporta el cliente',
+      'client',
+    ];
+
+    // Si menciona “cliente/propio”, forzamos FALSE
+    if (clienteKeys.any((k) => src.contains(k))) return false;
+
+    // Si menciona “proveedor/supplier”, TRUE
+    if (proveedorKeys.any((k) => src.contains(k))) return true;
+    return false;
   }
 
   double _parseTotalNumber(String totalText) {
