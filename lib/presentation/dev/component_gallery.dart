@@ -20,28 +20,48 @@ class _ComponentGalleryState extends State<ComponentGallery> {
       ..showSnackBar(SnackBar(content: Text(msg)));
   }
 
+  // --- Helper para títulos de sección ---
+  Widget _versionTitle(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 32.0, bottom: 8.0),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontFamily: 'Roboto',
+          fontWeight: FontWeight.w700,
+          fontSize: 18,
+        ),
+        textAlign: TextAlign.left,
+      ),
+    );
+  }
+
+  // Base de datos de prueba con parámetros variables
   ServiceRequestData _baseData({
     String? serviceNumber,
     ProposalStatus? pStatus,
     String? estimated,
     ServiceStatus? sStatus,
+    String materialSource = 'Propio',
+    String totalText = r'$1,200 MXN',
+    String title = 'Pintar sala y comedor',
   }) {
     return ServiceRequestData(
       customerName: 'Carlos Pinzón',
-      customerPhotoUrl: 'https://picsum.photos/seed/user/200',
+      customerPhotoUrl: 'lib/assets/duncan.jpg',
       rating: 4.0,
       serviceType: 'Pintura',
-      title: 'Pintar sala y comedor',
-      materialSource: 'Propio',
+      title: title,
+      materialSource: materialSource,
       location: 'Yautepec Mor.',
       dateText: '26/08/2025',
       timeText: '17:20 Hrs',
-      placeImageUrl: 'https://picsum.photos/seed/room/600/400',
+      placeImageUrl: 'lib/assets/vacia.jpg',
       description:
           'Resane y alisado de superficies, aplicación de sellador y 2 manos de pintura en muros y techo. '
           'Trabajo limpio y detallado. Área: 72 m².',
-      miniImages: const ['assets/mini1.png', 'assets/mini2.png'],
-      totalText: '\$1,200 MXN',
+      miniImages: const ['lib/assets/mini1.png', 'lib/assets/mini2.png'],
+      totalText: totalText,
       serviceNumber: serviceNumber,
       proposalStatus: pStatus,
       estimatedTimeText: estimated,
@@ -64,7 +84,6 @@ class _ComponentGalleryState extends State<ComponentGallery> {
         centerTitle: true,
       ),
       body: SafeArea(
-        // body está envuelto en un Stack para superponer el FAB del bot
         child: Stack(
           children: [
             SingleChildScrollView(
@@ -73,8 +92,7 @@ class _ComponentGalleryState extends State<ComponentGallery> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   AppTopBar(
-                    role:
-                        AppUserRole.cliente, // prueba también proveedor / admin
+                    role: AppUserRole.cliente,
                     onMenuSelected: (id) => _show(context, 'Hamburguesa → $id'),
                     onUserSelected: (id) => _show(context, 'Usuario → $id'),
                   ),
@@ -127,9 +145,8 @@ class _ComponentGalleryState extends State<ComponentGallery> {
                         _show(context, 'Abrir: Términos del servicio'),
                   ),
 
-                  // Service Request Card
-                  // 1) Solicitud
-                  const SizedBox(height: 48),
+                  // SERVICE CARDS (TODAS LAS VERSIONES)
+                  _versionTitle('Solicitud'),
                   ServiceRequestCard(
                     variant: ServiceCardVariant.solicitud,
                     data: _baseData(),
@@ -137,58 +154,222 @@ class _ComponentGalleryState extends State<ComponentGallery> {
                     onConfirm: () => _show(context, 'Confirmar (Solicitud)'),
                   ),
 
-                  // 2) Propuesta
-                  const SizedBox(height: 48),
+                  _versionTitle('Propuesta — Pendiente (Cliente)'),
                   ServiceRequestCard(
                     variant: ServiceCardVariant.propuesta,
                     data: _baseData(
                       serviceNumber: '24569',
                       pStatus: ProposalStatus.pendiente,
                       estimated: '17:30 hrs',
+                      materialSource: 'Cliente',
                     ),
-                    onReject: () => _show(context, 'Rechazar (Propuesta)'),
-                    onConfirm: () => _show(context, 'Confirmar (Propuesta)'),
-                    onModifyEstimatedTime: () =>
-                        _show(context, 'Modificar hora'),
-                    onTermsTap: () => _show(context, 'Abrir términos'),
+                    proposalPendingView: ProposalPendingView.cliente,
+                    onReject: () =>
+                        _show(context, 'Rechazar (Pendiente Cliente)'),
+                    onConfirmWithPayload:
+                        ({
+                          double? costOverride,
+                          String? estimatedTimeOverride,
+                        }) {
+                          _show(
+                            context,
+                            'Confirmar (Pendiente Cliente) → cost: ${costOverride ?? '-'}, hora: ${estimatedTimeOverride ?? '-'}',
+                          );
+                        },
+                    onConfirm: () =>
+                        debugPrint('Confirm base (Pendiente Cliente)'),
+                    onTermsTap: () =>
+                        _show(context, 'Abrir términos (Cliente)'),
                   ),
 
-                  // 3) Servicio (estado: Activo)
-                  const SizedBox(height: 48),
+                  _versionTitle(
+                    'Propuesta — Pendiente (Proveedor, material del PROVEEDOR)',
+                  ),
+                  ServiceRequestCard(
+                    variant: ServiceCardVariant.propuesta,
+                    data: _baseData(
+                      serviceNumber: '24570',
+                      pStatus: ProposalStatus.pendiente,
+                      estimated: '1 h 40 min',
+                      materialSource: 'Proveedor',
+                      totalText: r'$1200 MXN',
+                    ),
+                    proposalPendingView: ProposalPendingView.proveedor,
+                    onModifyEstimatedTimeTap: () => _show(
+                      context,
+                      'Abrir input: Hora estimada (Proveedor)',
+                    ),
+                    onReject: () => _show(
+                      context,
+                      'Rechazar (Pendiente Proveedor c/costo)',
+                    ),
+                    onConfirmWithPayload:
+                        ({
+                          double? costOverride,
+                          String? estimatedTimeOverride,
+                        }) {
+                          _show(
+                            context,
+                            'Confirmar (Pendiente Proveedor c/costo) → costo nuevo: ${costOverride ?? 0}, hora nueva: ${estimatedTimeOverride ?? '-'}',
+                          );
+                        },
+                    onConfirm: () => debugPrint(
+                      'Confirm base (Pendiente Proveedor c/costo)',
+                    ),
+                    onTermsTap: () =>
+                        _show(context, 'Abrir términos (Proveedor)'),
+                  ),
+
+                  _versionTitle(
+                    'Propuesta — Pendiente (Proveedor, material del CLIENTE)',
+                  ),
+                  ServiceRequestCard(
+                    variant: ServiceCardVariant.propuesta,
+                    data: _baseData(
+                      serviceNumber: '24571',
+                      pStatus: ProposalStatus.pendiente,
+                      estimated: '2 h',
+                      materialSource: 'Cliente',
+                      totalText: r'$900 MXN',
+                    ),
+                    proposalPendingView: ProposalPendingView.proveedor,
+                    onModifyEstimatedTimeTap: () => _show(
+                      context,
+                      'Abrir input: Hora estimada (Proveedor, sin costo)',
+                    ),
+                    onReject: () => _show(
+                      context,
+                      'Rechazar (Pendiente Proveedor s/costo)',
+                    ),
+                    onConfirmWithPayload:
+                        ({
+                          double? costOverride,
+                          String? estimatedTimeOverride,
+                        }) {
+                          _show(
+                            context,
+                            'Confirmar (Pendiente Proveedor s/costo) → costo: ${costOverride ?? '-'}, hora nueva: ${estimatedTimeOverride ?? '-'}',
+                          );
+                        },
+                    onConfirm: () => debugPrint(
+                      'Confirm base (Pendiente Proveedor s/costo)',
+                    ),
+                    onTermsTap: () =>
+                        _show(context, 'Abrir términos (Proveedor)'),
+                  ),
+
+                  _versionTitle('Propuesta — Enviada'),
+                  ServiceRequestCard(
+                    variant: ServiceCardVariant.propuesta,
+                    data: _baseData(
+                      serviceNumber: '24572',
+                      pStatus: ProposalStatus.enviada,
+                      estimated: '1 h 20 min',
+                      materialSource: 'Proveedor',
+                      totalText: r'$1350 MXN',
+                    ),
+                    onReject: () =>
+                        _show(context, 'Rechazar (Propuesta Enviada)'),
+                    onConfirmWithPayload:
+                        ({
+                          double? costOverride,
+                          String? estimatedTimeOverride,
+                        }) {
+                          _show(
+                            context,
+                            'Confirmar (Propuesta Enviada) → costo: ${costOverride ?? '-'}, hora: ${estimatedTimeOverride ?? '-'}',
+                          );
+                        },
+                    onConfirm: () =>
+                        debugPrint('Confirm base (Propuesta Enviada)'),
+                    onTermsTap: () =>
+                        _show(context, 'Abrir términos (Enviada)'),
+                  ),
+
+                  _versionTitle('Propuesta — Aceptada'),
+                  ServiceRequestCard(
+                    variant: ServiceCardVariant.propuesta,
+                    data: _baseData(
+                      serviceNumber: '24573',
+                      pStatus: ProposalStatus.aceptada,
+                      estimated: '1 h',
+                      materialSource: 'Cliente',
+                      totalText: r'$1000 MXN',
+                    ),
+                    onReject: () =>
+                        _show(context, 'Rechazar (Propuesta Aceptada)'),
+                    onConfirmWithPayload:
+                        ({
+                          double? costOverride,
+                          String? estimatedTimeOverride,
+                        }) {
+                          _show(
+                            context,
+                            'Confirmar (Propuesta Aceptada) → costo: ${costOverride ?? '-'}, hora: ${estimatedTimeOverride ?? '-'}',
+                          );
+                        },
+                    onConfirm: () =>
+                        debugPrint('Confirm base (Propuesta Aceptada)'),
+                    onTermsTap: () =>
+                        _show(context, 'Abrir términos (Aceptada)'),
+                  ),
+
+                  _versionTitle('Servicio — Activo'),
                   ServiceRequestCard(
                     variant: ServiceCardVariant.servicio,
                     data: _baseData(
-                      serviceNumber: '24569',
+                      serviceNumber: '30001',
                       sStatus: ServiceStatus.activo,
+                      materialSource: 'Proveedor',
+                      totalText: r'$1500 MXN',
+                      title: 'Pintar sala y comedor',
                     ),
                     onChat: () => _show(context, 'Chat'),
                     onCall: () => _show(context, 'Llamar'),
-                    onCancel: () => _show(context, 'Cancelar'),
-                    onReport: () => _show(context, 'Reportar'),
-                    onConclude: () => _show(context, 'Concluir'),
+                    onCancel: () =>
+                        _show(context, 'Cancelar (Servicio Activo)'),
+                    onReport: () =>
+                        _show(context, 'Reportar (Servicio Activo)'),
+                    onConclude: () =>
+                        _show(context, 'Concluir (Servicio Activo)'),
                   ),
-                  // 3.b) Servicio (estado: Finalizado)
-                  const SizedBox(height: 48),
+
+                  _versionTitle('Servicio — Finalizado'),
                   ServiceRequestCard(
                     variant: ServiceCardVariant.servicio,
                     data: _baseData(
-                      serviceNumber: '24569',
+                      serviceNumber: '30002',
                       sStatus: ServiceStatus.finalizado,
+                      totalText: r'$2050 MXN',
+                      title: 'Pintar sala y comedor',
                     ),
                     onOpenReceipt: () => _show(context, 'Abrir comprobante'),
                   ),
 
-                  // 3.c) Servicio (estado: Cancelado)
-                  const SizedBox(height: 48),
+                  _versionTitle('Servicio — Cancelado'),
                   ServiceRequestCard(
                     variant: ServiceCardVariant.servicio,
                     data: _baseData(
-                      serviceNumber: '24569',
+                      serviceNumber: '30003',
                       sStatus: ServiceStatus.cancelado,
+                      totalText: r'$0 MXN',
+                      title: 'Pintar sala y comedor',
                     ),
                   ),
 
-                  // Services Description
+                  _versionTitle('Servicio — Reportado'),
+                  ServiceRequestCard(
+                    variant: ServiceCardVariant.servicio,
+                    data: _baseData(
+                      serviceNumber: '30004',
+                      sStatus: ServiceStatus.reportado,
+                      totalText: r'$1200 MXN',
+                      title: 'Pintar sala y comedor',
+                    ),
+                  ),
+
+                  // ===========================
+                  // Descripción de Servicios
                   const SizedBox(height: 24),
                   ServicesDescription(
                     services: const [
@@ -208,7 +389,7 @@ class _ComponentGalleryState extends State<ComponentGallery> {
                         name: 'Plomería',
                         title: 'Reparación de tuberías',
                         experienceText: '2 años de experiencia',
-                        costText: 'Costo: \$1,200 MXN',
+                        costText: 'Costo: \$1200 MXN',
                       ),
                       ServiceInfo(
                         name: 'Electricidad',
@@ -220,12 +401,12 @@ class _ComponentGalleryState extends State<ComponentGallery> {
                         name: 'Carpintería',
                         title: 'Muebles a medida',
                         experienceText: '4 años de experiencia',
-                        costText: 'Costo: \$1,100 MXN',
+                        costText: 'Costo: \$1100 MXN',
                       ),
                     ],
                   ),
 
-                  // Reseñas Carrusel
+                  // Reseñas en carrusel
                   const SizedBox(height: 48),
                   ReviewsCarousel(
                     reviews: const [
@@ -282,7 +463,7 @@ class _ComponentGalleryState extends State<ComponentGallery> {
                     ],
                   ),
 
-                  // Disponibilidad
+                  //  Disponibilidad
                   const SizedBox(height: 24),
                   AvailabilityRow(
                     data: const AvailabilityData(timeRangeText: '9am - 5pm'),
@@ -307,14 +488,14 @@ class _ComponentGalleryState extends State<ComponentGallery> {
                     ],
                   ),
 
-                  // Info Bar
+                  // Barra de información
                   const SizedBox(height: 24),
                   InfoBar(
                     title: 'Servicios',
                     onBack: () => _show(context, 'Back pulsado (InfoBar)'),
                   ),
 
-                  // Métricas
+                  // Dashboard de métricas
                   const SizedBox(height: 24),
                   MetricDashboard(
                     children: const [
@@ -373,7 +554,7 @@ class _ComponentGalleryState extends State<ComponentGallery> {
                     onFilterTap: (f) => _show(context, 'Filtro rápido: $f'),
                   ),
 
-                  // Tarjeta de descuento del proveedor
+                  // Tarjetas de descuento de proveedor
                   const SizedBox(height: 24),
                   ProviderDiscountCard(
                     data: const ProviderDiscountData(
@@ -387,7 +568,7 @@ class _ComponentGalleryState extends State<ComponentGallery> {
                     ),
                   ),
 
-                  // Tarjeta de descuento por categoría
+                  // Tarjetas de descuento por categoría
                   const SizedBox(height: 24),
                   CategoryDiscountCard(
                     data: const CategoryDiscountData(
@@ -430,7 +611,7 @@ class _ComponentGalleryState extends State<ComponentGallery> {
                     onOpenProvider: () => debugPrint("Abrir proveedor"),
                   ),
 
-                  // Sección de proveedores de interés
+                  // Proveedores de interes
                   const SizedBox(height: 24),
                   InterestingProvidersSection(
                     items: const [
@@ -468,7 +649,7 @@ class _ComponentGalleryState extends State<ComponentGallery> {
                     onHire: (item) => debugPrint('Contratar: ${item.title}'),
                   ),
 
-                  // Tarjeta de Publicar Servicio
+                  // Publicar trabajo Card
                   const SizedBox(height: 24),
                   PublishPromptCard(
                     data: const PublishPromptData(
@@ -487,33 +668,29 @@ class _ComponentGalleryState extends State<ComponentGallery> {
                     onIndexChanged: (i) => debugPrint('Carrusel índice: $i'),
                   ),
 
-                  // Botón Contratar
+                  // Botones de contratar
                   const SizedBox(height: 16),
                   SizedBox(
                     width: 392,
                     child: HireButton(
                       onPressed: () {
-                        // TODO: navegación a la pantalla de contratación
-                        // Navigator.pushNamed(context, '/contratar');
                         debugPrint('Contratar pulsado');
                       },
                     ),
                   ),
 
-                  // Botón Publicar trabajo
+                  // Boton de publicar trabajo
                   const SizedBox(height: 16),
                   SizedBox(
                     width: 392,
                     child: PublishButton(
                       onPressed: () {
-                        // TODO: navegar a la pantalla de publicación
-                        // Navigator.pushNamed(context, '/publicar');
                         debugPrint('Publicar trabajo pulsado');
                       },
                     ),
                   ),
 
-                  // Cargador de imágenes (4 slots)
+                  // Subidor de imágenes
                   const SizedBox(height: 24),
                   ImageUploader4(
                     onChanged: (files) {
@@ -523,14 +700,14 @@ class _ComponentGalleryState extends State<ComponentGallery> {
                     },
                   ),
 
-                  // Selector de categorías
+                  // Selector de categoría de servicio
                   const SizedBox(height: 24),
                   ServiceCategorySelector(
                     onChanged: (list) =>
                         _show(context, 'Categorías: ${list.join(", ")}'),
                   ),
 
-                  // Calendario de fechas (DateCalendar)
+                  // Selector de fecha propuesta
                   const SizedBox(height: 24),
                   ProposedDatePicker(
                     initialDate: DateTime.now().add(const Duration(days: 2)),
@@ -547,7 +724,7 @@ class _ComponentGalleryState extends State<ComponentGallery> {
                     onChanged: (val) => debugPrint('Título: $val'),
                   ),
 
-                  // Campo de ubicación del trabajo (JobLocationField)
+                  // Sección de ubicación de trabajo
                   const SizedBox(height: 24),
                   JobLocationSection(
                     data: const JobLocationData(
@@ -575,7 +752,7 @@ class _ComponentGalleryState extends State<ComponentGallery> {
               ),
             ),
 
-            // Botón flotante del bot superpuesto (abajo-derecha)
+            // Botón flotante
             Positioned(
               right: 16,
               bottom: 16,
