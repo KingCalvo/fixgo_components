@@ -9,6 +9,7 @@ class ImageCarousel extends StatefulWidget {
     this.baseHeight = 220,
     this.onIndexChanged,
     this.borderRadius = 12,
+    this.controlsInset = 8,
   }) : super(key: key);
 
   final List<String> images; // URLs o assets
@@ -17,6 +18,7 @@ class ImageCarousel extends StatefulWidget {
   final double baseHeight;
   final ValueChanged<int>? onIndexChanged;
   final double borderRadius;
+  final double controlsInset;
 
   @override
   State<ImageCarousel> createState() => _ImageCarouselState();
@@ -82,9 +84,9 @@ class _ImageCarouselState extends State<ImageCarousel> {
                 ),
               ),
 
-              // Botón anterior
+              // Botón anterior (más cerca del borde)
               Positioned(
-                left: 4,
+                left: widget.controlsInset,
                 child: _NavIconButton(
                   icon: Icons.chevron_left_rounded,
                   onTap: _prev,
@@ -92,9 +94,9 @@ class _ImageCarouselState extends State<ImageCarousel> {
                 ),
               ),
 
-              // Botón siguiente
+              // Botón siguiente (más cerca del borde)
               Positioned(
-                right: 4,
+                right: widget.controlsInset,
                 child: _NavIconButton(
                   icon: Icons.chevron_right_rounded,
                   onTap: _next,
@@ -151,7 +153,7 @@ class _NavIconButtonState extends State<_NavIconButton> {
       child: Material(
         color: Colors.white,
         shape: const CircleBorder(),
-        elevation: 6,
+        elevation: 5,
         shadowColor: Colors.black.withValues(alpha: 0.25),
         child: InkWell(
           onTap: widget.onTap,
@@ -160,8 +162,8 @@ class _NavIconButtonState extends State<_NavIconButton> {
           splashColor: Colors.black.withValues(alpha: 0.08),
           highlightColor: Colors.black.withValues(alpha: 0.05),
           child: SizedBox(
-            width: 36,
-            height: 36,
+            width: 34,
+            height: 34,
             child: Icon(widget.icon, color: Colors.black, size: 20),
           ),
         ),

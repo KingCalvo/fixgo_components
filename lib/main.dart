@@ -4,6 +4,8 @@ import 'presentation/dev/component_gallery.dart';
 import 'presentation/dev/Hire_Service_Form_fx.dart';
 import 'presentation/dev/confirmacion_solicitudes_fx.dart';
 import 'presentation/dev/confirmacion_solicitudes_proveedor.dart';
+import 'presentation/dev/user_landing_page.dart';
+import 'presentation/dev/conocer_proveedor.dart';
 
 void main() {
   runApp(const MainApp());
@@ -17,7 +19,7 @@ class MainApp extends StatelessWidget {
     if (kDebugMode) {
       return const MaterialApp(
         debugShowCheckedModeBanner: true,
-        home: ComponentGallery(),
+        home: ConocerProveedorPage(),
       );
     }
 
