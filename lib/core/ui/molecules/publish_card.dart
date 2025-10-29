@@ -1,26 +1,19 @@
 import 'package:flutter/material.dart';
 
-class PublishPromptData {
-  /// Imagen a la izquierda
-  final String? imageAsset;
-  final String? imageUrl;
-
-  /// Callback para el botón
-  final VoidCallback? onPublish;
-
-  const PublishPromptData({this.imageAsset, this.imageUrl, this.onPublish});
-}
+// Muestra información para ayudar al cliente a publicar una solicitud de servicio
 
 class PublishPromptCard extends StatelessWidget {
-  final PublishPromptData data;
+  final VoidCallback? onPublish;
 
   /// Dimensiones base del diseño
   final double baseWidth;
   final double baseHeight;
 
+  static const String _kImageAsset = 'lib/assets/PublicarCard.png';
+
   const PublishPromptCard({
     super.key,
-    required this.data,
+    this.onPublish,
     this.baseWidth = 400,
     this.baseHeight = 100,
   });
@@ -65,10 +58,9 @@ class PublishPromptCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Imagen 74×74
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: _buildImage(),
+            child: _buildFixedImage(),
           ),
           const SizedBox(width: 12),
 
@@ -108,7 +100,7 @@ class PublishPromptCard extends StatelessWidget {
                 ),
                 Align(
                   alignment: Alignment.bottomRight,
-                  child: _PublishButton(onTap: data.onPublish),
+                  child: _PublishButton(onTap: onPublish),
                 ),
               ],
             ),
@@ -118,7 +110,7 @@ class PublishPromptCard extends StatelessWidget {
     );
   }
 
-  Widget _buildImage() {
+  Widget _buildFixedImage() {
     const placeholder = SizedBox(
       width: 74,
       height: 74,
@@ -127,25 +119,13 @@ class PublishPromptCard extends StatelessWidget {
       ),
     );
 
-    if (data.imageAsset != null) {
-      return Image.asset(
-        data.imageAsset!,
-        width: 74,
-        height: 74,
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => placeholder,
-      );
-    }
-    if (data.imageUrl != null) {
-      return Image.network(
-        data.imageUrl!,
-        width: 74,
-        height: 74,
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => placeholder,
-      );
-    }
-    return placeholder;
+    return Image.asset(
+      _kImageAsset,
+      width: 74,
+      height: 74,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => placeholder,
+    );
   }
 }
 

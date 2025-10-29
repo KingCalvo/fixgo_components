@@ -109,7 +109,7 @@ class _ComponentGalleryState extends State<ComponentGallery> {
                   const SizedBox(height: 48),
 
                   // Logo + Slogan
-                  LogoSloganCard(logoAsset: 'lib/assets/LogoNaranja.png'),
+                  LogoSloganCard(),
 
                   const SizedBox(height: 24),
 
@@ -121,7 +121,7 @@ class _ComponentGalleryState extends State<ComponentGallery> {
 
                   // Logo + Name
                   const SizedBox(height: 48),
-                  LogoNameCard(logoAsset: 'lib/assets/LogoVerde.png'),
+                  const LogoNameCard(),
 
                   // Role Switch
                   const SizedBox(height: 24),
@@ -652,9 +652,9 @@ class _ComponentGalleryState extends State<ComponentGallery> {
                   // Publicar trabajo Card
                   const SizedBox(height: 24),
                   PublishPromptCard(
-                    data: const PublishPromptData(
-                      imageAsset: 'lib/assets/PublicarCard.png',
-                    ),
+                    onPublish: () {
+                      // Navegar al flujo de publicar solicitud
+                    },
                   ),
 
                   // Carrusel de imágenes

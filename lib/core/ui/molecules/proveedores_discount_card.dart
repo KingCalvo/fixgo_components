@@ -20,6 +20,23 @@ class ProviderDiscountData {
   });
 }
 
+// Assets locales para categorías conocidas
+const String _pinturaAsset = 'lib/assets/PinturaImg.png';
+const String _plomeriaAsset = 'lib/assets/PlomeriaImg.png';
+
+String? _iconForCategory(String label) {
+  final k = label.toLowerCase().trim();
+  switch (k) {
+    case 'pintura':
+      return _pinturaAsset;
+    case 'plomería':
+    case 'plomeria':
+      return _plomeriaAsset;
+    default:
+      return null;
+  }
+}
+
 class ProviderDiscountCard extends StatelessWidget {
   final ProviderDiscountData data;
 
@@ -115,7 +132,8 @@ class ProviderDiscountCard extends StatelessWidget {
                       .map(
                         (c) => _CategoryChip(
                           label: c.label,
-                          iconAssetPath: c.iconAssetPath,
+                          iconAssetPath:
+                              _iconForCategory(c.label) ?? c.iconAssetPath,
                         ),
                       )
                       .toList(),

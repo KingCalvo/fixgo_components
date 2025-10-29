@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../../core/utils/service_images.dart';
+
+// Muestra los proveedores cercanos al cliente por su ubicación
 
 class NearbyProviderData {
   final String name;
@@ -63,7 +66,6 @@ class NearbyProvidersCard extends StatelessWidget {
           ),
           const SizedBox(height: 10),
 
-          // Contenedor con scroll si hay más de 3
           if (providers.length > 3)
             SizedBox(
               height: 230,
@@ -95,8 +97,30 @@ class _ProviderRow extends StatelessWidget {
 
   const _ProviderRow({required this.provider, this.onTap});
 
+  // Mapea categorías de imágenes
+  List<String> _miniImagesForProvider() {
+    final seen = <String>{};
+    final out = <String>[];
+
+    for (final cat in provider.categories) {
+      final imgs = serviceMiniImages(cat);
+      for (final path in imgs) {
+        if (seen.add(path)) out.add(path);
+        if (out.length == 2) return out;
+      }
+      if (out.length == 2) break;
+    }
+
+    if (out.isEmpty) {
+      out.addAll(serviceMiniImages(''));
+    }
+    return out.take(2).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final miniImgs = _miniImagesForProvider();
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -120,11 +144,11 @@ class _ProviderRow extends StatelessWidget {
             ClipOval(
               child: Image.network(
                 provider.photoUrl,
-                width: 30,
-                height: 30,
+                width: 50,
+                height: 50,
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) =>
-                    const Icon(Icons.person, size: 30, color: Colors.grey),
+                    const Icon(Icons.person, size: 50, color: Colors.grey),
               ),
             ),
             const SizedBox(width: 8),
@@ -149,7 +173,7 @@ class _ProviderRow extends StatelessWidget {
 
                   const SizedBox(height: 2),
 
-                  // Ubicación (línea 1)
+                  // Ubicación
                   Text(
                     provider.location,
                     style: const TextStyle(
@@ -162,7 +186,7 @@ class _ProviderRow extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
 
-                  // Distancia (línea 2)
+                  // Distancia
                   Text(
                     "${provider.distanceKm.toStringAsFixed(1)} km",
                     style: const TextStyle(
@@ -175,7 +199,6 @@ class _ProviderRow extends StatelessWidget {
 
                   const SizedBox(height: 3),
 
-                  // Estrellas
                   _StarsRow(rating: provider.rating),
                 ],
               ),
@@ -183,45 +206,30 @@ class _ProviderRow extends StatelessWidget {
 
             const SizedBox(width: 8),
 
-            // Contenedor flexible de categorías (scroll horizontal si no caben)
-            Flexible(
-              flex: 0,
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(
-                  // deja respirar al texto; ajusta si quieres más/menos espacio
-                  maxWidth: 120,
-                ),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      for (int i = 0; i < provider.categories.length; i++) ...[
-                        Container(
-                          width: 38,
-                          height: 27,
-                          margin: EdgeInsets.only(
-                            right: i != provider.categories.length - 1 ? 11 : 0,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: const Color(0xFFC3C0C0)),
-                          ),
-                          child: Image.asset(
-                            'assets/${provider.categories[i]}.png',
-                            fit: BoxFit.contain,
-                            errorBuilder: (_, __, ___) => const Icon(
-                              Icons.image,
-                              color: Colors.grey,
-                              size: 20,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
+            // Mini imágenes de categorías
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: List.generate(miniImgs.length, (i) {
+                return Container(
+                  width: 38,
+                  height: 27,
+                  margin: EdgeInsets.only(
+                    right: i == miniImgs.length - 1 ? 0 : 11,
                   ),
-                ),
-              ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: const Color(0xFFC3C0C0)),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: Image.asset(
+                    miniImgs[i],
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) =>
+                        const Icon(Icons.image, color: Colors.grey, size: 20),
+                  ),
+                );
+              }),
             ),
 
             const SizedBox(width: 6),

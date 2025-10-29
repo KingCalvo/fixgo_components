@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+// Componente que muestra proveedores de interés, lo usa el cliente.
+
 class InterestedProviderData {
   final String title;
   final String description;
@@ -15,8 +17,13 @@ class InterestedProviderData {
 }
 
 class InterestingProvidersSection extends StatefulWidget {
+  /// Nuevo: título configurable
+  final String title;
+
+  /// Lista completa (se ordena y se toma el top 7 internamente)
   final List<InterestedProviderData> items;
 
+  /// Cuántos mostrar al inicio
   final int initialVisible;
 
   /// Callbacks (preparadas para navegación en el futuro).
@@ -28,6 +35,7 @@ class InterestingProvidersSection extends StatefulWidget {
   const InterestingProvidersSection({
     super.key,
     required this.items,
+    this.title = 'También te podría interesar',
     this.initialVisible = 3,
     this.onKnow,
     this.onHire,
@@ -46,9 +54,16 @@ class _InterestingProvidersSectionState
 
   @override
   Widget build(BuildContext context) {
-    final visibleCount = _expanded
-        ? widget.items.length
-        : widget.items.length.clamp(0, widget.initialVisible);
+    // Ordenar por rating desc
+    final sorted = [...widget.items]
+      ..sort((a, b) => b.rating.compareTo(a.rating));
+
+    // Tomar solo TOP 7
+    final top = sorted.take(7).toList();
+
+    final maxVisible = top.length; // <= 7
+    final collapsed = maxVisible.clamp(0, widget.initialVisible);
+    final visibleCount = _expanded ? maxVisible : collapsed;
 
     return ConstrainedBox(
       constraints: BoxConstraints(maxWidth: widget.baseWidth),
@@ -59,11 +74,10 @@ class _InterestingProvidersSectionState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Título
-            const Text(
-              'También te podría interesar',
+            Text(
+              widget.title,
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 fontFamily: 'Roboto',
                 fontWeight: FontWeight.w600,
                 fontSize: 18,
@@ -81,14 +95,13 @@ class _InterestingProvidersSectionState
 
             const SizedBox(height: 10),
 
-            // Lista de cards
             AnimatedSize(
               duration: const Duration(milliseconds: 200),
               curve: Curves.easeOut,
               alignment: Alignment.topCenter,
               child: Column(
                 children: List.generate(visibleCount, (i) {
-                  final item = widget.items[i];
+                  final item = top[i];
                   return Padding(
                     padding: EdgeInsets.only(
                       bottom: i == visibleCount - 1 ? 0 : 10,
@@ -105,8 +118,8 @@ class _InterestingProvidersSectionState
 
             const SizedBox(height: 10),
 
-            // Ver más / Ver menos
-            if (widget.items.length > widget.initialVisible)
+            // Ver más / Ver menos (solo si hay más de initialVisible dentro del top 7)
+            if (maxVisible > collapsed)
               _SeeMoreBar(
                 expanded: _expanded,
                 onTap: () => setState(() => _expanded = !_expanded),

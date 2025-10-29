@@ -4,7 +4,6 @@ class QuickFilter {
   final String label;
   final double? width;
 
-  /// Asset opcional 25x25 para el ícono/imagen del filtro
   final String? iconAsset;
 
   const QuickFilter({required this.label, this.width, this.iconAsset});
@@ -13,9 +12,9 @@ class QuickFilter {
 /// Panel de búsqueda
 class SearchPanel extends StatefulWidget {
   final void Function(String query)? onSearchTap;
-
   final void Function(String filterLabel)? onFilterTap;
 
+  /// Si no mandas filtros, usa los internos y resolverá las imágenes automáticamente.
   final List<QuickFilter>? filters;
 
   final double baseWidth;
@@ -37,6 +36,25 @@ class SearchPanel extends StatefulWidget {
 class _SearchPanelState extends State<SearchPanel> {
   final _controller = TextEditingController();
 
+  static const Map<String, String> _FILTER_ASSETS = {
+    'pintura': 'lib/assets/PinturaImg.png',
+    'limpieza de exteriores': 'lib/assets/LimpiezaExterioresImg.png',
+    'plomería': 'lib/assets/PlomeriaImg.png',
+    'plomeria': 'lib/assets/PlomeriaImg.png',
+    'jardinería': 'lib/assets/JardineriaImg.png',
+    'jardineria': 'lib/assets/JardineriaImg.png',
+    'reparación de electrodomésticos': 'lib/assets/ReparacionElectroImg.png',
+    'reparacion de electrodomesticos': 'lib/assets/ReparacionElectroImg.png',
+    'electricidad': 'lib/assets/ElectricidadImg.png',
+    'herrería': 'lib/assets/HerreriaImg.png',
+    'herreria': 'lib/assets/HerreriaImg.png',
+    'albañilería': 'lib/assets/AlbanileriaImg.png',
+    'albanileria': 'lib/assets/AlbanileriaImg.png',
+    'carpintería': 'lib/assets/CarpinteriaImg.png',
+    'carpinteria': 'lib/assets/CarpinteriaImg.png',
+  };
+
+  /// Si no te pasan filtros, usa estos labels por defecto.
   List<QuickFilter> get _filters =>
       widget.filters ??
       const [
@@ -46,6 +64,26 @@ class _SearchPanelState extends State<SearchPanel> {
         QuickFilter(label: 'Jardinería'),
         QuickFilter(label: 'Reparación de Electrodomésticos'),
       ];
+
+  /// Normaliza para buscar en el mapa (sin acentos y en minúsculas).
+  String _normalize(String s) {
+    final lower = s.toLowerCase().trim();
+    // Quitar acentos comunes
+    return lower
+        .replaceAll('á', 'a')
+        .replaceAll('é', 'e')
+        .replaceAll('í', 'i')
+        .replaceAll('ó', 'o')
+        .replaceAll('ú', 'u')
+        .replaceAll('ü', 'u')
+        .replaceAll('ñ', 'n');
+  }
+
+  String? _resolveAssetFor(QuickFilter f) {
+    if (f.iconAsset != null && f.iconAsset!.isNotEmpty) return f.iconAsset;
+    final key = _normalize(f.label);
+    return _FILTER_ASSETS[key];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,28 +109,33 @@ class _SearchPanelState extends State<SearchPanel> {
   }
 
   Widget _content() {
+    final filters = _filters;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // INPUT
+        // Input de búsqueda
         _SearchInput(
           controller: _controller,
           onTapIcon: () => widget.onSearchTap?.call(_controller.text.trim()),
         ),
         const SizedBox(height: 8),
+
+        // Filtros rápidos
         SizedBox(
           height: 40,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 5),
-            itemCount: _filters.length,
+            itemCount: filters.length,
             separatorBuilder: (_, __) => const SizedBox(width: 8),
             itemBuilder: (_, i) {
-              final f = _filters[i];
+              final f = filters[i];
+              final asset = _resolveAssetFor(f);
               return _QuickFilterChip(
                 label: f.label,
                 width: f.width,
-                iconAsset: f.iconAsset,
+                iconAsset: asset,
                 onTap: () => widget.onFilterTap?.call(f.label),
               );
             },

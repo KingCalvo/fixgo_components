@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
+// Componente que muestra el logo y nombre de FixGo.
+
 class LogoNameCard extends StatelessWidget {
-  final String logoAsset;
   final String title;
   final Color backgroundColor;
   final Color titleColor;
@@ -13,7 +14,6 @@ class LogoNameCard extends StatelessWidget {
 
   const LogoNameCard({
     super.key,
-    required this.logoAsset,
     this.title = 'FixGo',
     this.backgroundColor = const Color(0xFFFFFFFF),
     this.titleColor = const Color(0xFF424242),
@@ -26,6 +26,8 @@ class LogoNameCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const String logoPath = 'lib/assets/LogoVerde.png';
+
     return LayoutBuilder(
       builder: (context, c) {
         final w = c.maxWidth.isFinite ? c.maxWidth : baseWidth;
@@ -56,11 +58,24 @@ class LogoNameCard extends StatelessWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Logo 91×91
-                    const SizedBox(
+                    // Logo fijo
+                    SizedBox(
                       width: 91,
                       height: 91,
-                      child: _SafeAssetImage(),
+                      child: Image.asset(
+                        logoPath,
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => Container(
+                          decoration: BoxDecoration(
+                            color: const Color(0x14000000),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.image_not_supported,
+                            color: Color(0x99000000),
+                          ),
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -94,31 +109,6 @@ class LogoNameCard extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-}
-
-/// Usa el asset que llega por el constructor del padre mediante InheritedWidget local.
-/// Simplifica el build: el path real lo recibe el padre y lo inyecta con Image.asset().
-class _SafeAssetImage extends StatelessWidget {
-  const _SafeAssetImage();
-
-  @override
-  Widget build(BuildContext context) {
-    // Buscamos el LogoNameCard ancestro para leer el asset (no expone Inherited, así que usamos context.findAncestorWidgetOfExactType)
-    final parent = context.findAncestorWidgetOfExactType<LogoNameCard>();
-    final path = parent?.logoAsset ?? '';
-
-    return Image.asset(
-      path,
-      fit: BoxFit.contain,
-      errorBuilder: (_, __, ___) => Container(
-        decoration: BoxDecoration(
-          color: const Color(0x14000000),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: const Icon(Icons.image_not_supported, color: Color(0x99000000)),
-      ),
     );
   }
 }

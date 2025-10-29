@@ -1,9 +1,25 @@
 import 'package:flutter/material.dart';
 
+/*Muestra las ultimas 5 reseñas que dejaron clientes o proveedores, cada reseña muestra la foto de perfil del usuario o del proveedor, 
+su nombre, ubicación, estrellas y tiempo de publicación y por último el comentario de la reseña, cada reseña se muestra en forma de columna separada 
+por una línea. 
+ */
+
+// Esto lo utiliza el proveedor y el cliente
+
+/// Ahora soporta avatares desde:
+/// URL http/https
+/// Supabase Storage path (avatarStoragePath) usando storageUrlResolver
+
 class ReviewInfo {
   final String name;
   final String location;
+
+  /// URL directa (http/https) o asset path ('assets/...').
   final String avatarUrl;
+
+  final String? avatarStoragePath;
+
   final int rating;
   final String timeAgoText;
   final String comment;
@@ -14,6 +30,7 @@ class ReviewInfo {
     required this.name,
     required this.location,
     required this.avatarUrl,
+    this.avatarStoragePath,
     required this.rating,
     required this.timeAgoText,
     required this.comment,
@@ -22,7 +39,8 @@ class ReviewInfo {
   });
 }
 
-// Carrusel horizontal de reseñas
+/// Firma para resolver rutas de Storage
+typedef StorageUrlResolver = Future<String> Function(String storagePath);
 
 class ReviewsCarousel extends StatelessWidget {
   final List<ReviewInfo> reviews;
@@ -33,6 +51,10 @@ class ReviewsCarousel extends StatelessWidget {
   final double columnWidth;
   final double columnHeight;
 
+  final StorageUrlResolver? storageUrlResolver;
+
+  final Map<String, String> Function(String resolvedUrl)? httpHeadersResolver;
+
   const ReviewsCarousel({
     super.key,
     required this.reviews,
@@ -40,15 +62,17 @@ class ReviewsCarousel extends StatelessWidget {
     this.minHeight = 158,
     this.columnWidth = 230,
     this.columnHeight = 157,
+    this.storageUrlResolver,
+    this.httpHeadersResolver,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Ordenar: de menor tiempo a mayor (más reciente primero)
+    // Ordenar: más reciente primero (por createdAt), si no hay, por ageRank
     final data = [...(reviews.isNotEmpty ? reviews : _fallback)]
       ..sort((a, b) {
         if (a.createdAt != null && b.createdAt != null) {
-          return b.createdAt!.compareTo(a.createdAt!); // más nuevo primero
+          return b.createdAt!.compareTo(a.createdAt!);
         }
         return (a.ageRank ?? 999).compareTo(b.ageRank ?? 999);
       });
@@ -78,7 +102,13 @@ class ReviewsCarousel extends StatelessWidget {
     final List<Widget> out = [];
     for (int i = 0; i < items.length; i++) {
       out.add(
-        _ReviewColumn(info: items[i], width: columnWidth, height: columnHeight),
+        _ReviewColumn(
+          info: items[i],
+          width: columnWidth,
+          height: columnHeight,
+          storageUrlResolver: storageUrlResolver,
+          httpHeadersResolver: httpHeadersResolver,
+        ),
       );
       if (i != items.length - 1) {
         out.add(
@@ -93,7 +123,7 @@ class ReviewsCarousel extends StatelessWidget {
     return out;
   }
 
-  // Fallback para la galería
+  // Datos de reseñas de ejemplo (Prueba)
   static const _fallback = <ReviewInfo>[
     ReviewInfo(
       name: 'Carlos Pinzón',
@@ -149,11 +179,15 @@ class _ReviewColumn extends StatelessWidget {
   final ReviewInfo info;
   final double width;
   final double height;
+  final StorageUrlResolver? storageUrlResolver;
+  final Map<String, String> Function(String url)? httpHeadersResolver;
 
   const _ReviewColumn({
     required this.info,
     required this.width,
     required this.height,
+    this.storageUrlResolver,
+    this.httpHeadersResolver,
   });
 
   @override
@@ -173,7 +207,13 @@ class _ReviewColumn extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  _Avatar(url: info.avatarUrl, size: 70),
+                  _Avatar(
+                    urlOrAsset: info.avatarUrl,
+                    storagePath: info.avatarStoragePath,
+                    size: 70,
+                    storageUrlResolver: storageUrlResolver,
+                    httpHeadersResolver: httpHeadersResolver,
+                  ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Column(
@@ -255,25 +295,94 @@ class _ReviewColumn extends StatelessWidget {
 }
 
 class _Avatar extends StatelessWidget {
-  final String url;
+  final String urlOrAsset;
+  final String? storagePath;
   final double size;
-  const _Avatar({required this.url, this.size = 70});
+  final StorageUrlResolver? storageUrlResolver;
+  final Map<String, String> Function(String url)? httpHeadersResolver;
+
+  const _Avatar({
+    required this.urlOrAsset,
+    this.storagePath,
+    this.size = 70,
+    this.storageUrlResolver,
+    this.httpHeadersResolver,
+  });
+
+  bool get _isHttp =>
+      urlOrAsset.startsWith('http://') || urlOrAsset.startsWith('https://');
+
+  bool get _isAsset => urlOrAsset.startsWith('assets/');
 
   @override
   Widget build(BuildContext context) {
+    Widget child;
+
+    // PRIORIDAD: si hay storagePath
+    if (storagePath != null && storageUrlResolver != null) {
+      child = FutureBuilder<String>(
+        future: storageUrlResolver!(storagePath!),
+        builder: (context, snap) {
+          if (snap.connectionState == ConnectionState.waiting) {
+            return _placeholder();
+          }
+          if (!snap.hasData || snap.data == null) {
+            return _errorIcon();
+          }
+          final resolvedUrl = snap.data!;
+          final headers = httpHeadersResolver != null
+              ? httpHeadersResolver!(resolvedUrl)
+              : null;
+          return Image.network(
+            resolvedUrl,
+            headers: headers,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => _errorIcon(),
+          );
+        },
+      );
+    }
+    // Si es URL http/https
+    else if (_isHttp) {
+      child = Image.network(
+        urlOrAsset,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => _errorIcon(),
+      );
+    }
+    // Si es asset local
+    else if (_isAsset) {
+      child = Image.asset(
+        urlOrAsset,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => _errorIcon(),
+      );
+    } else {
+      child = _errorIcon();
+    }
+
     return Container(
       width: size,
       height: size,
       decoration: const BoxDecoration(shape: BoxShape.circle),
       clipBehavior: Clip.antiAlias,
-      child: Image.network(
-        url,
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) =>
-            const Icon(Icons.person, size: 40, color: Color(0xFF9E9E9E)),
-      ),
+      child: child,
     );
   }
+
+  Widget _placeholder() => Container(
+    color: const Color(0xFFEAEAEA),
+    child: const Center(
+      child: SizedBox(
+        width: 18,
+        height: 18,
+        child: CircularProgressIndicator(strokeWidth: 2),
+      ),
+    ),
+  );
+
+  Widget _errorIcon() =>
+      const Icon(Icons.person, size: 40, color: Color(0xFF9E9E9E));
 }
 
 class _StarsRow extends StatelessWidget {

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
+// Componente Logo + Eslogan para el Login, con logo FIJO interno.
+
 class LogoSloganCard extends StatelessWidget {
-  /// Asset del logo (por ejemplo: 'assets/LogoNaranja.png')
-  final String logoAsset;
+  static const String _kLogoAssetPath = 'lib/assets/LogoNaranja.png';
+
   final String title;
   final String slogan;
   final Color backgroundColor;
@@ -15,7 +17,6 @@ class LogoSloganCard extends StatelessWidget {
 
   const LogoSloganCard({
     super.key,
-    required this.logoAsset,
     this.title = 'FixGo',
     this.slogan = 'Tu solución al instante. Repara, mejora y sigue con FixGO.',
     this.backgroundColor = const Color(0xFF1F3C88),
@@ -42,7 +43,6 @@ class LogoSloganCard extends StatelessWidget {
             width: baseWidth * scale,
             height: baseHeight * scale,
             child: _CardBody(
-              logoAsset: logoAsset,
               title: title,
               slogan: slogan,
               backgroundColor: backgroundColor,
@@ -59,14 +59,12 @@ class LogoSloganCard extends StatelessWidget {
 }
 
 class _CardBody extends StatelessWidget {
-  final String logoAsset;
   final String title;
   final String slogan;
   final Color backgroundColor, titleColor, sloganColor;
   final double padding, borderRadius;
 
   const _CardBody({
-    required this.logoAsset,
     required this.title,
     required this.slogan,
     required this.backgroundColor,
@@ -101,11 +99,10 @@ class _CardBody extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Logo 91x91, mantiene cuadrado
                 SizedBox(
                   width: logoSize,
                   height: logoSize,
-                  child: _SafeAssetImage(path: logoAsset),
+                  child: const _SafeAssetImage(),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -159,15 +156,13 @@ class _CardBody extends StatelessWidget {
   }
 }
 
-/// Carga segura del asset con placeholder si falta.
 class _SafeAssetImage extends StatelessWidget {
-  final String path;
-  const _SafeAssetImage({required this.path});
+  const _SafeAssetImage();
 
   @override
   Widget build(BuildContext context) {
     return Image.asset(
-      path,
+      LogoSloganCard._kLogoAssetPath,
       fit: BoxFit.contain,
       errorBuilder: (_, __, ___) => Container(
         decoration: BoxDecoration(
