@@ -147,6 +147,7 @@ class ServiceRequestCard extends StatefulWidget {
 
   /// Para definir si el material es por parte del proveedor
   final bool? materialBySupplierOverride;
+  final bool autoHeight; // nuevo
 
   const ServiceRequestCard({
     super.key,
@@ -172,6 +173,7 @@ class ServiceRequestCard extends StatefulWidget {
     // propuesta
     this.proposalPendingView,
     this.materialBySupplierOverride,
+    this.autoHeight = false, // default: comportamiento actual
   });
 
   @override
@@ -342,6 +344,16 @@ class _ServiceRequestCardState extends State<ServiceRequestCard> {
     return LayoutBuilder(
       builder: (context, c) {
         final w = c.maxWidth.isFinite ? c.maxWidth : widget.baseWidth;
+
+        // --- AUTO-HEIGHT: sin altura fija, solo limitamos el ancho ---
+        if (widget.autoHeight) {
+          final width = w < widget.baseWidth ? w : widget.baseWidth;
+          return Center(
+            child: SizedBox(width: width, child: _buildCardBody()),
+          );
+        }
+
+        // --- Comportamiento anterior: altura fija + escala ---
         final h = c.maxHeight.isFinite ? c.maxHeight : baseHeight;
         final scale = (w / widget.baseWidth < h / baseHeight)
             ? w / widget.baseWidth
@@ -351,42 +363,7 @@ class _ServiceRequestCardState extends State<ServiceRequestCard> {
           child: SizedBox(
             width: widget.baseWidth * scale,
             height: baseHeight * scale,
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(widget.borderRadius),
-                border: Border.all(color: Colors.black.withValues(alpha: 0.7)),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x33000000),
-                    blurRadius: 12,
-                    offset: Offset(0, 6),
-                  ),
-                ],
-              ),
-              clipBehavior: Clip.antiAlias,
-              child: Padding(
-                padding: EdgeInsets.all(widget.padding),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _header(),
-                    const SizedBox(height: 6),
-                    const _Divider382(),
-                    const SizedBox(height: 6),
-                    _topDetailBlock(),
-                    const SizedBox(height: 12),
-                    _descriptionBlock(),
-                    const SizedBox(height: 8),
-                    const _Divider382(),
-                    const SizedBox(height: 6),
-                    _proposalOrServiceExtrasAndTotal(), // total va aquí
-                    ..._footerActions(context),
-                  ],
-                ),
-              ),
-            ),
+            child: _buildCardBody(),
           ),
         );
       },
@@ -1074,6 +1051,45 @@ class _ServiceRequestCardState extends State<ServiceRequestCard> {
 
     // Finalizado/Cancelado/Reportado
     return const [SizedBox.shrink()];
+  }
+
+  Widget _buildCardBody() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(widget.borderRadius),
+        border: Border.all(color: Colors.black.withValues(alpha: 0.7)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x33000000),
+            blurRadius: 12,
+            offset: Offset(0, 6),
+          ),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Padding(
+        padding: EdgeInsets.all(widget.padding),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _header(),
+            const SizedBox(height: 6),
+            const _Divider382(),
+            const SizedBox(height: 6),
+            _topDetailBlock(),
+            const SizedBox(height: 12),
+            _descriptionBlock(),
+            const SizedBox(height: 8),
+            const _Divider382(),
+            const SizedBox(height: 6),
+            _proposalOrServiceExtrasAndTotal(),
+            ..._footerActions(context),
+          ],
+        ),
+      ),
+    );
   }
 }
 
