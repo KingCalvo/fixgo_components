@@ -250,11 +250,30 @@ class _ServiceRequestCardState extends State<ServiceRequestCard> {
   }
 
   double _parseTotalNumber(String totalText) {
-    // Extrae número del texto tipo "450 MXN" o "$450.00"
-    final digits = RegExp(r'([\d]+([.,]\d+)?)').firstMatch(totalText);
-    if (digits == null) return 0;
-    final n = digits.group(1)!.replaceAll(',', '.');
-    return double.tryParse(n) ?? 0;
+    // Mantén sólo dígitos, comas y puntos
+    String s = totalText.replaceAll(RegExp(r'[^\d,\.]'), '');
+
+    // Caso solo coma y sin punto: se asume coma = miles (quita todas)
+    if (s.contains(',') && !s.contains('.')) {
+      s = s.replaceAll(',', '');
+    }
+    // Caso punto y coma: conserva el ultimo separador como decimal si parece decimal (1-2 dígitos)
+    else if (s.contains('.') && s.contains(',')) {
+      final lastComma = s.lastIndexOf(',');
+      final lastDot = s.lastIndexOf('.');
+      final lastSep = lastComma > lastDot ? lastComma : lastDot;
+      final decLen = s.length - lastSep - 1;
+
+      if (decLen >= 1 && decLen <= 2) {
+        final intPart = s.substring(0, lastSep).replaceAll(RegExp(r'[.,]'), '');
+        final decPart = s.substring(lastSep + 1);
+        s = '$intPart.$decPart';
+      } else {
+        s = s.replaceAll(RegExp(r'[.,]'), '');
+      }
+    }
+
+    return double.tryParse(s) ?? 0;
   }
 
   String _formatMoneyMXN(double value, {String suffix = ' MXN'}) {
@@ -406,160 +425,157 @@ class _ServiceRequestCardState extends State<ServiceRequestCard> {
         widget.variant == ServiceCardVariant.servicio &&
         widget.data.serviceStatus != null;
 
-    return SizedBox(
-      height: 170,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 141,
-            child: _RoundedImage(
-              pathOrUrl: widget.data.placeImageUrl,
-              height: 150,
-            ),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 141,
+          child: _RoundedImage(
+            pathOrUrl: widget.data.placeImageUrl,
+            height: 150,
           ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                RichText(
-                  text: TextSpan(
-                    children: [
-                      TextSpan(
-                        text: widget.data.serviceNumber == null
-                            ? 'Servicio: '
-                            : 'Servicio ${widget.data.serviceNumber!}: ',
-                        style: const TextStyle(
-                          fontFamily: 'Roboto',
-                          fontWeight: FontWeight.w500,
-                          fontSize: 20,
-                          color: Colors.black,
-                        ),
-                      ),
-                      TextSpan(
-                        text: widget.data.serviceType,
-                        style: const TextStyle(
-                          fontFamily: 'Roboto',
-                          fontWeight: FontWeight.w500,
-                          fontSize: 20,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 2),
-
-                Text(
-                  widget.data.title,
-                  style: const TextStyle(
-                    fontFamily: 'Roboto',
-                    fontWeight: FontWeight.w400,
-                    fontSize: 17,
-                    color: Colors.black,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-
-                Row(
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              RichText(
+                text: TextSpan(
                   children: [
-                    const Text(
-                      'Material: ',
-                      style: TextStyle(
+                    TextSpan(
+                      text: widget.data.serviceNumber == null
+                          ? 'Servicio: '
+                          : 'Servicio ${widget.data.serviceNumber!}: ',
+                      style: const TextStyle(
                         fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w300,
-                        fontSize: 14.25,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 20,
                         color: Colors.black,
                       ),
                     ),
-                    Text(
-                      widget.data.materialSource,
+                    TextSpan(
+                      text: widget.data.serviceType,
                       style: const TextStyle(
                         fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w300,
-                        fontSize: 14.25,
-                        color: Colors.black,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Icon(
-                      widget.data.materialSource.toLowerCase() == 'propio'
-                          ? Icons.house_rounded
-                          : Icons.directions_car_rounded,
-                      size: 18,
-                      color: Colors.black.withValues(alpha: 0.8),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-
-                Text(
-                  widget.data.location,
-                  style: const TextStyle(
-                    fontFamily: 'Roboto',
-                    fontWeight: FontWeight.w300,
-                    fontSize: 13,
-                    color: Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 6),
-
-                Row(
-                  children: [
-                    Text(
-                      widget.data.dateText,
-                      style: const TextStyle(
-                        fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w300,
-                        fontSize: 16,
-                        color: Colors.black,
-                      ),
-                    ),
-                    const SizedBox(width: 45),
-                    Text(
-                      widget.data.timeText,
-                      style: const TextStyle(
-                        fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w300,
-                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 20,
                         color: Colors.black,
                       ),
                     ),
                   ],
                 ),
+              ),
+              const SizedBox(height: 2),
 
-                if (showProposalChip) ...[
-                  const SizedBox(height: 8),
-                  _statusChip(
-                    text: switch (widget.data.proposalStatus!) {
-                      ProposalStatus.pendiente => 'Pendiente',
-                      ProposalStatus.enviada => 'Enviada',
-                      ProposalStatus.aceptada => 'Aceptada',
-                    },
-                    color: _proposalColor(widget.data.proposalStatus!),
+              Text(
+                widget.data.title,
+                style: const TextStyle(
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.w400,
+                  fontSize: 17,
+                  color: Colors.black,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 4),
+
+              Row(
+                children: [
+                  const Text(
+                    'Material: ',
+                    style: TextStyle(
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.w300,
+                      fontSize: 14.25,
+                      color: Colors.black,
+                    ),
+                  ),
+                  Text(
+                    widget.data.materialSource,
+                    style: const TextStyle(
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.w300,
+                      fontSize: 14.25,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Icon(
+                    widget.data.materialSource.toLowerCase() == 'propio'
+                        ? Icons.house_rounded
+                        : Icons.directions_car_rounded,
+                    size: 18,
+                    color: Colors.black.withValues(alpha: 0.8),
                   ),
                 ],
+              ),
+              const SizedBox(height: 4),
 
-                if (showServiceChip) ...[
-                  const SizedBox(height: 8),
-                  _statusChip(
-                    text: switch (widget.data.serviceStatus!) {
-                      ServiceStatus.activo => 'Activo',
-                      ServiceStatus.finalizado => 'Finalizado',
-                      ServiceStatus.cancelado => 'Cancelado',
-                      ServiceStatus.reportado => 'Reportado',
-                    },
-                    color: _serviceColor(widget.data.serviceStatus!),
+              Text(
+                widget.data.location,
+                style: const TextStyle(
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.w300,
+                  fontSize: 13,
+                  color: Colors.black,
+                ),
+              ),
+              const SizedBox(height: 6),
+
+              Row(
+                children: [
+                  Text(
+                    widget.data.dateText,
+                    style: const TextStyle(
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.w300,
+                      fontSize: 16,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(width: 45),
+                  Text(
+                    widget.data.timeText,
+                    style: const TextStyle(
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.w300,
+                      fontSize: 16,
+                      color: Colors.black,
+                    ),
                   ),
                 ],
+              ),
+
+              if (showProposalChip) ...[
+                const SizedBox(height: 8),
+                _statusChip(
+                  text: switch (widget.data.proposalStatus!) {
+                    ProposalStatus.pendiente => 'Pendiente',
+                    ProposalStatus.enviada => 'Enviada',
+                    ProposalStatus.aceptada => 'Aceptada',
+                  },
+                  color: _proposalColor(widget.data.proposalStatus!),
+                ),
               ],
-            ),
+
+              if (showServiceChip) ...[
+                const SizedBox(height: 8),
+                _statusChip(
+                  text: switch (widget.data.serviceStatus!) {
+                    ServiceStatus.activo => 'Activo',
+                    ServiceStatus.finalizado => 'Finalizado',
+                    ServiceStatus.cancelado => 'Cancelado',
+                    ServiceStatus.reportado => 'Reportado',
+                  },
+                  color: _serviceColor(widget.data.serviceStatus!),
+                ),
+              ],
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

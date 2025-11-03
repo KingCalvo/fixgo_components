@@ -91,7 +91,7 @@ class _ConocerProveedorPageState extends State<ConocerProveedorPage> {
 
   void _goToConfirmacionUsuario() {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const ConfirmacionSolicitudesPage()),
+      MaterialPageRoute(builder: (_) => const ConfirmacionSolicitudesEjemplo()),
     );
   }
 
@@ -346,8 +346,8 @@ class _ProviderLocationMap extends StatelessWidget {
 }
 
 // NAVEGACIÓN DE EJEMPLO
-class ConfirmacionSolicitudesPage extends StatelessWidget {
-  const ConfirmacionSolicitudesPage({super.key});
+class ConfirmacionSolicitudesEjemplo extends StatelessWidget {
+  const ConfirmacionSolicitudesEjemplo({super.key});
   @override
   Widget build(BuildContext context) {
     return const Scaffold(

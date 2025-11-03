@@ -22,7 +22,7 @@ class _ConfirmacionProveedorPageState extends State<ConfirmacionProveedorPage> {
         rating: 4.2,
         serviceType: 'Pintura',
         title: 'Pintar sala y comedor',
-        materialSource: 'Proveedor', // aquí el proveedor aporta material
+        materialSource: 'Proveedor',
         location: 'Yautepec, Mor.',
         dateText: '26/08/2025',
         timeText: '17:20 Hrs',
@@ -84,14 +84,14 @@ class _ConfirmacionProveedorPageState extends State<ConfirmacionProveedorPage> {
   // Acciones simuladas (sustituye)
 
   Future<void> _rejectAt(int index) async {
-    // TODO: Supabase -> update status, etc.
+    //  update status, etc.
     setState(() => _items.removeAt(index));
   }
 
   Future<void> _confirmAt(int index) async {
     final item = _items[index];
     if (item.data.proposalStatus == ProposalStatus.pendiente) {
-      // TODO: Supabase -> update status a 'enviada'
+      //  update status a 'enviada'
       setState(() {
         _items[index] = item.copyWith(
           data: item.data.copyWith(proposalStatus: ProposalStatus.enviada),
