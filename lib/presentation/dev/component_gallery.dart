@@ -539,11 +539,6 @@ class _ComponentGalleryState extends State<ComponentGallery> {
                         onChanged: (v, k, val) =>
                             _show(context, 'Mini $k → $val'),
                       ),
-                      FilterPill(
-                        variant: FilterVariant.ubicacion,
-                        onChanged: (v, k, val) =>
-                            _show(context, 'Ubicación $k → $val'),
-                      ),
                     ],
                   ),
 

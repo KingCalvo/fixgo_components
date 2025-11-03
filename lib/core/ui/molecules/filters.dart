@@ -1,27 +1,24 @@
 import 'package:flutter/material.dart';
 
-// Variantes de filtro
-enum FilterVariant { servicios, fecha, fechaMini, ubicacion }
+// Variantes de filtro (ubicación removida)
+enum FilterVariant { servicios, fecha, fechaMini }
 
 // Widget único que dibuja el “pill” y abre un menú contextual con opciones.
 // No hace consultas. Sólo muestra/guarda la selección y emite onChanged.
 class FilterPill extends StatefulWidget {
   final FilterVariant variant;
 
-  // Callback para informar selección (clave/valor).
-  // servicios:    key='servicio',    value=p.ej. 'Pintura'
-  // fecha/mini:   key='periodo',     value='Hoy'|'Esta semana'|'Este mes'
-  // ubicación:    key='estado' o 'municipio', value=nombre
+  /// Callback para informar selección (clave/valor).
+  /// servicios:  key='servicio', value='Pintura'|'Plomería'|...
+  /// fecha/mini: key='periodo',  value='Hoy'|'Esta semana'|'Este mes'|...
   final void Function(FilterVariant variant, String key, String value)?
   onChanged;
 
   /// Listas opcionales
   final List<String>? serviceOptions;
   final List<String>? dateOptions;
-  final List<String>? states;
-  final List<String>? municipalities;
 
-  /// Si true, el label muestra lo elegido (ej. "Servicios: Pintura")
+  /// Si true, el label muestra lo elegido (ej. "Pintura" / "Esta semana")
   final bool showSelectionInLabel;
 
   const FilterPill({
@@ -30,8 +27,6 @@ class FilterPill extends StatefulWidget {
     this.onChanged,
     this.serviceOptions,
     this.dateOptions,
-    this.states,
-    this.municipalities,
     this.showSelectionInLabel = true,
   });
 
@@ -44,21 +39,17 @@ class _FilterPillState extends State<FilterPill> {
 
   String? _selectedService;
   String? _selectedPeriod;
-  String? _selectedState;
-  String? _selectedMunicipio;
 
   // tamaños base por variante
   double get _w => switch (widget.variant) {
     FilterVariant.servicios => 110,
     FilterVariant.fecha => 130,
     FilterVariant.fechaMini => 120,
-    FilterVariant.ubicacion => 160,
   };
   double get _h => switch (widget.variant) {
     FilterVariant.servicios => 26,
     FilterVariant.fecha => 26,
     FilterVariant.fechaMini => 22,
-    FilterVariant.ubicacion => 26,
   };
   double get _iconSize => switch (widget.variant) {
     FilterVariant.fechaMini => 20,
@@ -68,45 +59,44 @@ class _FilterPillState extends State<FilterPill> {
 
   List<String> get _services =>
       widget.serviceOptions ??
-      const ['Pintura', 'Herrería', 'Jardinería', 'Albañilería'];
+      const [
+        'Todos',
+        'Pintura',
+        'Herrería',
+        'Jardinería',
+        'Plomería',
+        'Albañilería',
+        'Limpieza',
+        'Reparación',
+      ];
 
   List<String> get _periods =>
       widget.dateOptions ?? const ['Hoy', 'Esta semana', 'Este mes'];
-
-  List<String> get _states =>
-      widget.states ?? const ['Morelos', 'CDMX', 'Edomex'];
-  List<String> get _municipios =>
-      widget.municipalities ?? const ['Yautepec', 'Cuautla', 'Cuernavaca'];
 
   String get _baseLabel => switch (widget.variant) {
     FilterVariant.servicios => 'Servicios',
     FilterVariant.fecha => 'Fecha',
     FilterVariant.fechaMini => 'Fecha',
-    FilterVariant.ubicacion => 'Ubicación',
   };
 
   String get _label {
     switch (widget.variant) {
       case FilterVariant.servicios:
-        return _selectedService ?? _baseLabel;
+        return widget.showSelectionInLabel
+            ? (_selectedService ?? _baseLabel)
+            : _baseLabel;
       case FilterVariant.fecha || FilterVariant.fechaMini:
-        return _selectedPeriod ?? _baseLabel;
-      case FilterVariant.ubicacion:
-        if (_selectedState != null && _selectedMunicipio != null) {
-          return '$_selectedState / $_selectedMunicipio';
-        }
-        return _selectedState ?? _selectedMunicipio ?? _baseLabel;
+        return widget.showSelectionInLabel
+            ? (_selectedPeriod ?? _baseLabel)
+            : _baseLabel;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Detectar si hay algo seleccionado
     final bool hasSelection = switch (widget.variant) {
       FilterVariant.servicios => _selectedService != null,
       FilterVariant.fecha || FilterVariant.fechaMini => _selectedPeriod != null,
-      FilterVariant.ubicacion =>
-        _selectedState != null || _selectedMunicipio != null,
     };
 
     // Colores base
@@ -233,79 +223,6 @@ class _FilterPillState extends State<FilterPill> {
               ),
             )
             .toList();
-
-      case FilterVariant.ubicacion:
-        // Submenús: Estado / Municipio (abre a la derecha automáticamente)
-        return [
-          SubmenuButton(
-            leadingIcon: const Icon(Icons.location_city, color: Colors.black),
-            child: const Text(
-              'Estado',
-              style: TextStyle(
-                fontFamily: 'Roboto',
-                fontSize: 14,
-                color: Colors.black,
-              ),
-            ),
-            menuChildren: _states
-                .map(
-                  (e) => MenuItemButton(
-                    onPressed: () {
-                      setState(() => _selectedState = e);
-                      widget.onChanged?.call(
-                        FilterVariant.ubicacion,
-                        'estado',
-                        e,
-                      );
-                      // No cierro el menú padre para que el usuario pueda elegir municipio también.
-                    },
-                    child: Text(
-                      e,
-                      style: const TextStyle(
-                        fontFamily: 'Roboto',
-                        fontSize: 14,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ),
-                )
-                .toList(),
-          ),
-          SubmenuButton(
-            leadingIcon: const Icon(Icons.map_outlined, color: Colors.black),
-            child: const Text(
-              'Municipio',
-              style: TextStyle(
-                fontFamily: 'Roboto',
-                fontSize: 14,
-                color: Colors.black,
-              ),
-            ),
-            menuChildren: _municipios
-                .map(
-                  (m) => MenuItemButton(
-                    onPressed: () {
-                      setState(() => _selectedMunicipio = m);
-                      widget.onChanged?.call(
-                        FilterVariant.ubicacion,
-                        'municipio',
-                        m,
-                      );
-                      _controller.close();
-                    },
-                    child: Text(
-                      m,
-                      style: const TextStyle(
-                        fontFamily: 'Roboto',
-                        fontSize: 14,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ),
-                )
-                .toList(),
-          ),
-        ];
     }
   }
 }
