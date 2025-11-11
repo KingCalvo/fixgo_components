@@ -99,13 +99,12 @@ class _ComponentGalleryState extends State<ComponentGallery> {
                   const SizedBox(height: 12),
 
                   // Profile header
-                  ProfileHeaderCard(
+                  /*                   ProfileHeaderCard(
                     data: profileData,
                     onBack: () => _show(context, 'Back pressed (Profile)'),
                     onSettings: () =>
                         _show(context, 'Settings pressed (Profile)'),
-                  ),
-
+                  ), */
                   const SizedBox(height: 48),
 
                   // Logo + Slogan
@@ -465,11 +464,11 @@ class _ComponentGalleryState extends State<ComponentGallery> {
 
                   //  Disponibilidad
                   const SizedBox(height: 24),
-                  AvailabilityRow(
+                  /*                   AvailabilityRow(
                     data: const AvailabilityData(timeRangeText: '9am - 5pm'),
                     onEdit: () => _show(context, 'Editar disponibilidad'),
                   ),
-
+ */
                   // Calificaciones por categoría
                   const SizedBox(height: 24),
                   CategoryRatings(

@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 
+/* Muestra la descripción de los servicios que ofrece el proveedor, detallando cada servicio, se deben mostrar mínimo 2 servicios 
+y si son más de 3 servicios el desplazamiento tiene que ser como en un carrusel hacia la derecha para mostrar más servicios, 
+cada servicio se muestra en forma de columna separada por una linea.  */
+//  Variante normal y variante de edición.
+// En edición: cada tarjeta muestra botón "Editar" y aparecen 2 inputs en experiencia y costo, cuando se editan sale el btn de "Guardar".
+
 class ServiceInfo {
   final String name;
   final String title;
@@ -14,11 +20,33 @@ class ServiceInfo {
     required this.costText,
     this.iconAsset,
   });
+
+  ServiceInfo copyWith({
+    String? name,
+    String? title,
+    String? experienceText,
+    String? costText,
+    String? iconAsset,
+  }) {
+    return ServiceInfo(
+      name: name ?? this.name,
+      title: title ?? this.title,
+      experienceText: experienceText ?? this.experienceText,
+      costText: costText ?? this.costText,
+      iconAsset: iconAsset ?? this.iconAsset,
+    );
+  }
 }
 
-// Sección “Descripción de servicios”
 class ServicesDescription extends StatelessWidget {
   final List<ServiceInfo> services;
+
+  // Variante de edición. Cuando es true, aparece el botón "Editar" por cada servicio.
+  final bool isEditing;
+
+  // Se llama cuando el usuario pulsa "Guardar" en una tarjeta.
+  final Future<void> Function(int index, String newExperience, String newCost)?
+  onSaveItem;
 
   final double baseWidth;
   final double minHeight;
@@ -28,6 +56,8 @@ class ServicesDescription extends StatelessWidget {
   const ServicesDescription({
     super.key,
     required this.services,
+    this.isEditing = false,
+    this.onSaveItem,
     this.baseWidth = 412,
     this.minHeight = 150,
     this.columnWidth = 126,
@@ -53,8 +83,8 @@ class ServicesDescription extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontFamily: 'Roboto',
-                    fontWeight: FontWeight.w400,
-                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 18,
                     color: Colors.black,
                   ),
                 ),
@@ -88,13 +118,16 @@ class ServicesDescription extends StatelessWidget {
     for (int i = 0; i < items.length; i++) {
       cols.add(
         _ServiceColumn(
+          index: i,
           info: items[i],
           width: columnWidth,
           badgeMinHeight: headerBadgeMinH,
+          isEditing: isEditing,
+          onSave: onSaveItem,
         ),
       );
       if (i != items.length - 1) {
-        cols.add(_VerticalDivider());
+        cols.add(const _VerticalDivider());
       }
     }
     return cols;
@@ -126,25 +159,111 @@ class ServicesDescription extends StatelessWidget {
   ];
 }
 
-class _ServiceColumn extends StatelessWidget {
+class _ServiceColumn extends StatefulWidget {
+  final int index;
   final ServiceInfo info;
   final double width;
   final double badgeMinHeight;
+  final bool isEditing;
+  final Future<void> Function(int index, String newExperience, String newCost)?
+  onSave;
+
   const _ServiceColumn({
+    required this.index,
     required this.info,
     required this.width,
     required this.badgeMinHeight,
+    required this.isEditing,
+    required this.onSave,
   });
+
+  @override
+  State<_ServiceColumn> createState() => _ServiceColumnState();
+}
+
+class _ServiceColumnState extends State<_ServiceColumn> {
+  bool _editingThis = false; // estado de edición por tarjeta
+  bool _saving = false;
+
+  late final TextEditingController _expCtrl;
+  late final TextEditingController _costCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _expCtrl = TextEditingController(text: widget.info.experienceText);
+    _costCtrl = TextEditingController(text: widget.info.costText);
+  }
+
+  @override
+  void didUpdateWidget(covariant _ServiceColumn oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // si cambian los datos desde afuera, sincroniza
+    if (oldWidget.info.experienceText != widget.info.experienceText) {
+      _expCtrl.text = widget.info.experienceText;
+    }
+    if (oldWidget.info.costText != widget.info.costText) {
+      _costCtrl.text = widget.info.costText;
+    }
+    // si sales del modo edición global, resetea local
+    if (!widget.isEditing && _editingThis) {
+      setState(() => _editingThis = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _expCtrl.dispose();
+    _costCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _toggleEditOrSave() async {
+    if (!_editingThis) {
+      // Entrar en edición solo si la variante global lo permite
+      if (widget.isEditing) setState(() => _editingThis = true);
+      return;
+    }
+    // Guardar
+    final newExp = _expCtrl.text.trim();
+    final newCost = _costCtrl.text.trim();
+    if (newExp.isEmpty || newCost.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Completa experiencia y costo')),
+      );
+      return;
+    }
+
+    setState(() => _saving = true);
+    try {
+      if (widget.onSave != null) {
+        await widget.onSave!(widget.index, newExp, newCost);
+      }
+      if (!mounted) return;
+      setState(() => _editingThis = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Servicio actualizado')));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error al guardar: $e')));
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: width,
+      width: widget.width,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          // Encabezado con icono + nombre
           Container(
-            constraints: BoxConstraints(minHeight: badgeMinHeight),
+            constraints: BoxConstraints(minHeight: widget.badgeMinHeight),
             width: double.infinity,
             decoration: BoxDecoration(
               color: Colors.white,
@@ -163,14 +282,14 @@ class _ServiceColumn extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: [
-                _MiniIcon(asset: info.iconAsset),
+                _MiniIcon(asset: widget.info.iconAsset),
                 const SizedBox(width: 6),
                 Expanded(
                   child: FittedBox(
                     fit: BoxFit.scaleDown,
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      info.name,
+                      widget.info.name,
                       softWrap: false,
                       maxLines: 1,
                       style: const TextStyle(
@@ -188,8 +307,9 @@ class _ServiceColumn extends StatelessWidget {
 
           const SizedBox(height: 10),
 
+          // Título
           Text(
-            info.title,
+            widget.info.title,
             textAlign: TextAlign.center,
             style: const TextStyle(
               fontFamily: 'Roboto',
@@ -199,28 +319,48 @@ class _ServiceColumn extends StatelessWidget {
               height: 1.25,
             ),
           ),
+
           const SizedBox(height: 8),
-          Text(
-            info.experienceText,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontFamily: 'Roboto',
-              fontWeight: FontWeight.w300,
-              fontSize: 10,
-              color: Colors.black,
-            ),
-          ),
+
+          // Experiencia
+          _editingThis
+              ? _TinyInput(controller: _expCtrl)
+              : Text(
+                  widget.info.experienceText,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontFamily: 'Roboto',
+                    fontWeight: FontWeight.w300,
+                    fontSize: 10,
+                    color: Colors.black,
+                  ),
+                ),
+
           const SizedBox(height: 8),
-          Text(
-            info.costText,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontFamily: 'Roboto',
-              fontWeight: FontWeight.w300,
-              fontSize: 10,
-              color: Colors.black,
+
+          // Costo
+          _editingThis
+              ? _TinyInput(controller: _costCtrl)
+              : Text(
+                  widget.info.costText,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontFamily: 'Roboto',
+                    fontWeight: FontWeight.w300,
+                    fontSize: 10,
+                    color: Colors.black,
+                  ),
+                ),
+
+          const SizedBox(height: 8),
+
+          // Botón Editar / Guardar (solo visible en variante de edición)
+          if (widget.isEditing)
+            _EditSaveButton(
+              saving: _saving,
+              isEditingThis: _editingThis,
+              onTap: _toggleEditOrSave,
             ),
-          ),
         ],
       ),
     );
@@ -228,6 +368,8 @@ class _ServiceColumn extends StatelessWidget {
 }
 
 class _VerticalDivider extends StatelessWidget {
+  const _VerticalDivider();
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -238,6 +380,7 @@ class _VerticalDivider extends StatelessWidget {
   }
 }
 
+/// Ícono mini
 class _MiniIcon extends StatelessWidget {
   final String? asset;
   const _MiniIcon({this.asset});
@@ -254,6 +397,83 @@ class _MiniIcon extends StatelessWidget {
       fit: BoxFit.contain,
       errorBuilder: (_, __, ___) =>
           const Icon(Icons.construction, size: 20, color: Colors.black54),
+    );
+  }
+}
+
+/// Input diminuto para experiencia y costo: cuando es editar
+class _TinyInput extends StatelessWidget {
+  final TextEditingController controller;
+  const _TinyInput({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 92,
+      height: 10,
+      child: TextField(
+        controller: controller,
+        style: const TextStyle(fontSize: 10, height: 1.0),
+        textAlign: TextAlign.center,
+        textInputAction: TextInputAction.done,
+        decoration: InputDecoration(
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 6,
+            vertical: 0,
+          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(4)),
+        ),
+        onSubmitted: (_) {},
+      ),
+    );
+  }
+}
+
+/// Botón Editar / Guardar
+class _EditSaveButton extends StatelessWidget {
+  final bool isEditingThis;
+  final bool saving;
+  final VoidCallback onTap;
+
+  const _EditSaveButton({
+    required this.isEditingThis,
+    required this.saving,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final label = saving
+        ? 'Guardando...'
+        : (isEditingThis ? 'Guardar' : 'Editar');
+
+    return SizedBox(
+      width: 80,
+      height: 13,
+      child: ElevatedButton(
+        onPressed: saving ? null : onTap,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF2E7D32),
+          padding: EdgeInsets.zero,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          minimumSize: const Size(80, 13),
+          elevation: 3,
+        ),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontFamily: 'Roboto',
+              fontWeight: FontWeight.w300,
+              fontSize: 10,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

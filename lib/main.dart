@@ -10,6 +10,8 @@ import 'presentation/dev/servicios_activos_usuario_page.dart';
 import 'presentation/dev/servicios_activos_proveedor.dart';
 import 'presentation/dev/solicitudes_cercanas.dart';
 import 'presentation/dev/nuevas_solicitudes.dart';
+import 'presentation/dev/perfil_proveedor_page.dart';
+import 'presentation/dev/historial_reviews_proveedor.dart';
 
 void main() {
   runApp(const MainApp());
@@ -23,7 +25,7 @@ class MainApp extends StatelessWidget {
     if (kDebugMode) {
       return const MaterialApp(
         debugShowCheckedModeBanner: true,
-        home: NuevasSolicitudesProveedor(),
+        home: HistorialReviewsProveedorPage(),
       );
     }
 
