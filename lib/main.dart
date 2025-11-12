@@ -12,6 +12,8 @@ import 'presentation/dev/solicitudes_cercanas.dart';
 import 'presentation/dev/nuevas_solicitudes.dart';
 import 'presentation/dev/perfil_proveedor_page.dart';
 import 'presentation/dev/historial_reviews_proveedor.dart';
+import 'presentation/dev/provider_performance_page.dart';
+import 'presentation/dev/admin_panel_page.dart';
 
 void main() {
   runApp(const MainApp());
@@ -25,7 +27,7 @@ class MainApp extends StatelessWidget {
     if (kDebugMode) {
       return const MaterialApp(
         debugShowCheckedModeBanner: true,
-        home: HistorialReviewsProveedorPage(),
+        home: AdminPanelPage(),
       );
     }
 
