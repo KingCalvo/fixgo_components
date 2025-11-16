@@ -8,7 +8,7 @@ import '../../core/ui/ui.dart';
 import '../../core/utils/service_images.dart';
 
 /// Muestra lista de ServiceRequestCard (variante servicio) para estados:
-/// Activo, Finalizado, Cancelado, Reportado.
+/// Activo, Finalizado, Cancelado, Rechazado y Reportado.
 class ServiciosActivosProveedor extends StatefulWidget {
   const ServiciosActivosProveedor({Key? key}) : super(key: key);
 
@@ -96,6 +96,26 @@ class _ServiciosActivosProveedorState extends State<ServiciosActivosProveedor> {
         serviceStatus: ServiceStatus.reportado,
       ),
     ),
+    // Ejemplo con estado RECHAZADO
+    _ServiceItem(
+      data: ServiceRequestData(
+        customerName: 'Diego Pérez',
+        customerPhotoUrl: 'https://picsum.photos/seed/c5/200',
+        rating: 4.1,
+        serviceType: 'Limpieza',
+        title: 'Limpieza de sala',
+        materialSource: 'Propio',
+        location: 'Yautepec, Mor.',
+        dateText: '25/10/2025',
+        timeText: '10:00 Hrs',
+        placeImageUrl: 'https://picsum.photos/seed/px5/400/280',
+        description: 'Limpieza general de sala y comedor.',
+        miniImages: const [],
+        totalText: r'$400 MXN',
+        serviceNumber: '40005',
+        serviceStatus: ServiceStatus.rechazado,
+      ),
+    ),
   ];
 
   Future<void> _setStatusAt(int index, ServiceStatus status) async {
@@ -138,6 +158,7 @@ class _ServiciosActivosProveedorState extends State<ServiciosActivosProveedor> {
       return s == ServiceStatus.activo ||
           s == ServiceStatus.finalizado ||
           s == ServiceStatus.cancelado ||
+          s == ServiceStatus.rechazado || // ✅ ahora también muestra Rechazado
           s == ServiceStatus.reportado;
     }).toList();
 
@@ -293,5 +314,6 @@ String _mapStatusToDb(ServiceStatus s) => switch (s) {
   ServiceStatus.activo => 'activo',
   ServiceStatus.finalizado => 'finalizado',
   ServiceStatus.cancelado => 'cancelado',
+  ServiceStatus.rechazado => 'rechazado', // ✅ nuevo caso
   ServiceStatus.reportado => 'reportado',
 };

@@ -1,7 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
-/* Este widget representa una card para mostrar solicitudes de servicio. Puede tener tres variantes:
+/* Este widget representa una card para mostrar solicitudes de servicio. Puede tener tres variantes: 
 Solicitud, Propuesta y Servicio. */
 
 /* Versiones:
@@ -16,20 +16,22 @@ Cuando es la versión Propuesta Cliente y tiene el status “Pendiente” muestr
 Cuando es la versión Propuesta Proveedor y tiene el status “Pendiente” muestra cambiar la Hora estimada e Ingresar el costo. Ingresar el costo solo aparecerá si el Material es por parte del Proveedor si es por parte del Cliente no tiene que aparecer ese input.
 
 3. Versión Servicio:
-Tiene cuatro status (Son 4 chips visibles, 3 layouts): Activo, Finalizado, Cancelado, Reportado. Y muestra lo de enviar mensajes, cancelar, reportar y concluir.
-*/
+Tiene cuatro status: Activo, Finalizado, Cancelado, Rechazado y Reportado.
+ */
 
-/// Variante de la card
+// Esto lo utiliza el proveedor y el cliente
+
+// Variante de la card
 enum ServiceCardVariant { solicitud, propuesta, servicio }
 
-/// Vista de la propuesta cuando está Pendiente
+// Vista de la propuesta cuando está Pendiente
 enum ProposalPendingView { cliente, proveedor }
 
-/// Estados para Propuesta
+// Estados para Propuesta
 enum ProposalStatus { pendiente, enviada, aceptada }
 
-/// Estados para Servicio
-enum ServiceStatus { activo, finalizado, cancelado, reportado }
+// Estados para Servicio
+enum ServiceStatus { activo, finalizado, cancelado, rechazado, reportado }
 
 Color _proposalColor(ProposalStatus s) {
   switch (s) {
@@ -49,12 +51,14 @@ Color _serviceColor(ServiceStatus s) {
       return const Color(0xFF1F3C88);
     case ServiceStatus.cancelado:
       return const Color(0xFFD41E1E);
+    case ServiceStatus.rechazado:
+      return const Color(0xFFD41E1E);
     case ServiceStatus.reportado:
       return const Color(0xFFF86117);
   }
 }
 
-// -------------------- Datos --------------------
+// Datos
 
 class ServiceRequestData {
   // Encabezado
@@ -66,16 +70,16 @@ class ServiceRequestData {
   final String serviceType;
   final String title;
 
-  /// Origen del material ("Proveedor", "Propio")
+  // Origen del material ("Proveedor" y "Propio")
   final String materialSource;
 
   final String location;
   final String dateText;
   final String timeText;
 
-  final String placeImageUrl; // imagen
+  final String placeImageUrl;
   final String description;
-  final List<String> miniImages; // íconos/mini fotos
+  final List<String> miniImages;
 
   final String totalText;
 
@@ -83,7 +87,7 @@ class ServiceRequestData {
   final String? serviceNumber;
   final ProposalStatus? proposalStatus;
 
-  /// Texto visible de hora estimada
+  // Texto visible de hora estimada
   final String? estimatedTimeText;
 
   final ServiceStatus? serviceStatus;
@@ -110,9 +114,9 @@ class ServiceRequestData {
   });
 }
 
-// -------------------- Card --------------------
+// Cards
 
-/// Card “Solicitud/Propuesta/Servicio”
+// Card “Solicitud/Propuesta/Servicio”
 class ServiceRequestCard extends StatefulWidget {
   final ServiceCardVariant variant;
   final ServiceRequestData data;
@@ -121,15 +125,15 @@ class ServiceRequestCard extends StatefulWidget {
   final VoidCallback? onReject;
   final VoidCallback? onConfirm;
 
-  /// Confirm que envía payload (cost/hora nueva)
+  // Confirm que envía payload (cost/hora nueva)
   final void Function({double? costOverride, String? estimatedTimeOverride})?
   onConfirmWithPayload;
 
   // Propuesta
-  final VoidCallback? onModifyEstimatedTimeTap; //abre input
+  final VoidCallback? onModifyEstimatedTimeTap; // abre input
   final VoidCallback? onTermsTap;
 
-  // Servicio (activo/cancelado/finalizado/reportado)
+  // Servicio (activo/cancelado/finalizado/reportado/rechazado)
   final VoidCallback? onCancel;
   final VoidCallback? onReport;
   final VoidCallback? onConclude;
@@ -137,17 +141,20 @@ class ServiceRequestCard extends StatefulWidget {
   final VoidCallback? onChat;
   final VoidCallback? onCall;
 
+  // Botón "Ver detalles"
+  final VoidCallback? onViewDetails;
+
   final double baseWidth;
   final double? baseHeightOverride;
   final double padding;
   final double borderRadius;
 
-  /// Vista solo para Propuesta Pendiente
+  // Vista solo para Propuesta Pendiente
   final ProposalPendingView? proposalPendingView;
 
-  /// Para definir si el material es por parte del proveedor
+  // Para definir si el material es por parte del proveedor
   final bool? materialBySupplierOverride;
-  final bool autoHeight; // nuevo
+  final bool autoHeight;
 
   const ServiceRequestCard({
     super.key,
@@ -165,6 +172,7 @@ class ServiceRequestCard extends StatefulWidget {
     this.onOpenReceipt,
     this.onChat,
     this.onCall,
+    this.onViewDetails,
     // estilo
     this.baseWidth = 402,
     this.baseHeightOverride,
@@ -173,7 +181,7 @@ class ServiceRequestCard extends StatefulWidget {
     // propuesta
     this.proposalPendingView,
     this.materialBySupplierOverride,
-    this.autoHeight = false, // default: comportamiento actual
+    this.autoHeight = false,
   });
 
   @override
@@ -232,7 +240,7 @@ class _ServiceRequestCardState extends State<ServiceRequestCard> {
       'supplier',
     ];
 
-    // Casos que deben ser SIEMPRE cliente (no mostrar input)
+    // Casos que deben ser SIEMPRE cliente (no muestra el input)
     const clienteKeys = [
       'propio',
       'cliente',
@@ -250,7 +258,7 @@ class _ServiceRequestCardState extends State<ServiceRequestCard> {
   }
 
   double _parseTotalNumber(String totalText) {
-    // Mantén sólo dígitos, comas y puntos
+    // Mantiene sólo dígitos, comas y puntos
     String s = totalText.replaceAll(RegExp(r'[^\d,\.]'), '');
 
     // Caso solo coma y sin punto: se asume coma = miles (quita todas)
@@ -283,7 +291,7 @@ class _ServiceRequestCardState extends State<ServiceRequestCard> {
     return '\$$fixed$suffix';
   }
 
-  /// Total mostrado: si hay costo nuevo, se suma al total original solo visualmente.
+  /// Total mostrado: si hay costo nuevo, se suma al total original solo visualmente. MODIFICAR PARA SUBIR A LA BD
   String get _computedTotalText {
     final base = _parseTotalNumber(widget.data.totalText);
     final extra = double.tryParse(_costCtrl.text.replaceAll(',', '.')) ?? 0;
@@ -303,7 +311,7 @@ class _ServiceRequestCardState extends State<ServiceRequestCard> {
   static const double _hServicioActivo = 609;
 
   double _computedBaseHeight() {
-    // --- PROPUESTA ---
+    // PROPUESTA
     if (widget.variant == ServiceCardVariant.propuesta) {
       final status = widget.data.proposalStatus;
 
@@ -333,21 +341,22 @@ class _ServiceRequestCardState extends State<ServiceRequestCard> {
         return _hPropuestaAceptada;
       }
 
-      // Cualquier otro caso de propuesta (fallback)
+      // Cualquier otro caso de propuesta
       return _hPropuestaBase;
     }
 
-    // --- SOLICITUD ---
+    // SOLICITUD
     if (widget.variant == ServiceCardVariant.solicitud) {
       return _hSolicitud;
     }
 
-    // --- SERVICIO ---
+    // SERVICIO
     if (widget.data.serviceStatus == ServiceStatus.finalizado) {
       return _hServicioFinalizado;
     }
 
     if (widget.data.serviceStatus == ServiceStatus.cancelado ||
+        widget.data.serviceStatus == ServiceStatus.rechazado ||
         widget.data.serviceStatus == ServiceStatus.reportado) {
       return _hServicioCanceladoReportado;
     }
@@ -363,16 +372,12 @@ class _ServiceRequestCardState extends State<ServiceRequestCard> {
     return LayoutBuilder(
       builder: (context, c) {
         final w = c.maxWidth.isFinite ? c.maxWidth : widget.baseWidth;
-
-        // --- AUTO-HEIGHT: sin altura fija, solo limitamos el ancho ---
         if (widget.autoHeight) {
           final width = w < widget.baseWidth ? w : widget.baseWidth;
           return Center(
             child: SizedBox(width: width, child: _buildCardBody()),
           );
         }
-
-        // --- Comportamiento anterior: altura fija + escala ---
         final h = c.maxHeight.isFinite ? c.maxHeight : baseHeight;
         final scale = (w / widget.baseWidth < h / baseHeight)
             ? w / widget.baseWidth
@@ -388,8 +393,6 @@ class _ServiceRequestCardState extends State<ServiceRequestCard> {
       },
     );
   }
-
-  // ---------------- Secciones ----------------
 
   Widget _header() {
     return Row(
@@ -467,7 +470,6 @@ class _ServiceRequestCardState extends State<ServiceRequestCard> {
                 ),
               ),
               const SizedBox(height: 2),
-
               Text(
                 widget.data.title,
                 style: const TextStyle(
@@ -480,7 +482,6 @@ class _ServiceRequestCardState extends State<ServiceRequestCard> {
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 4),
-
               Row(
                 children: [
                   const Text(
@@ -512,7 +513,6 @@ class _ServiceRequestCardState extends State<ServiceRequestCard> {
                 ],
               ),
               const SizedBox(height: 4),
-
               Text(
                 widget.data.location,
                 style: const TextStyle(
@@ -523,7 +523,6 @@ class _ServiceRequestCardState extends State<ServiceRequestCard> {
                 ),
               ),
               const SizedBox(height: 6),
-
               Row(
                 children: [
                   Text(
@@ -547,7 +546,6 @@ class _ServiceRequestCardState extends State<ServiceRequestCard> {
                   ),
                 ],
               ),
-
               if (showProposalChip) ...[
                 const SizedBox(height: 8),
                 _statusChip(
@@ -559,7 +557,6 @@ class _ServiceRequestCardState extends State<ServiceRequestCard> {
                   color: _proposalColor(widget.data.proposalStatus!),
                 ),
               ],
-
               if (showServiceChip) ...[
                 const SizedBox(height: 8),
                 _statusChip(
@@ -567,6 +564,7 @@ class _ServiceRequestCardState extends State<ServiceRequestCard> {
                     ServiceStatus.activo => 'Activo',
                     ServiceStatus.finalizado => 'Finalizado',
                     ServiceStatus.cancelado => 'Cancelado',
+                    ServiceStatus.rechazado => 'Rechazado',
                     ServiceStatus.reportado => 'Reportado',
                   },
                   color: _serviceColor(widget.data.serviceStatus!),
@@ -641,14 +639,14 @@ class _ServiceRequestCardState extends State<ServiceRequestCard> {
   }
 
   Widget _proposalOrServiceExtrasAndTotal() {
-    // PROPUESTA Pendiente del Cliente: Sin hora ni costo, solo botones (footer)
+    // PROPUESTA Pendiente del Cliente: Sin hora ni costo, solo botones
     if (_isProposalPendingCliente) {
       return _totalRow(
         _formatMoneyMXN(_parseTotalNumber(widget.data.totalText)),
       );
     }
 
-    // PROPUESTA Pendiente del Proveedor: Hora estimada, Costo (proveedor)
+    // PROPUESTA Pendiente del Proveedor: Hora estimada y Costo (proveedor)
     if (_isProposalPendingProveedor) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -730,7 +728,6 @@ class _ServiceRequestCardState extends State<ServiceRequestCard> {
                     controller: _costCtrl,
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
-                      signed: false,
                     ),
                     decoration: _inputDecoration(hint: '0.00'),
                     style: const TextStyle(fontSize: 14),
@@ -743,7 +740,6 @@ class _ServiceRequestCardState extends State<ServiceRequestCard> {
           ],
 
           _totalRow(_computedTotalText),
-
           const SizedBox(height: 6),
           const _Divider382(),
           const SizedBox(height: 6),
@@ -817,7 +813,9 @@ class _ServiceRequestCardState extends State<ServiceRequestCard> {
         );
       }
 
-      if (s == ServiceStatus.cancelado || s == ServiceStatus.reportado) {
+      if (s == ServiceStatus.cancelado ||
+          s == ServiceStatus.rechazado ||
+          s == ServiceStatus.reportado) {
         return _totalRow(
           _formatMoneyMXN(_parseTotalNumber(widget.data.totalText)),
         );
@@ -978,7 +976,7 @@ class _ServiceRequestCardState extends State<ServiceRequestCard> {
       ];
     }
 
-    // SERVICI: Acciones por status
+    // SERVICIO: Acciones por status
     if (widget.data.serviceStatus == ServiceStatus.activo) {
       return [
         const SizedBox(height: 8),
@@ -1097,6 +1095,17 @@ class _ServiceRequestCardState extends State<ServiceRequestCard> {
             _topDetailBlock(),
             const SizedBox(height: 12),
             _descriptionBlock(),
+
+            // Botón "Ver detalles"
+            const SizedBox(height: 8),
+            Center(
+              child: _SmallActionButton(
+                label: 'Ver detalles',
+                color: const Color(0xFF1F3C88),
+                onTap: widget.onViewDetails,
+              ),
+            ),
+
             const SizedBox(height: 8),
             const _Divider382(),
             const SizedBox(height: 6),
@@ -1127,15 +1136,21 @@ class _Avatar extends StatelessWidget {
   final double size;
   const _Avatar({required this.pathOrUrl, this.size = 43});
 
+  bool get _isNet =>
+      pathOrUrl.startsWith('http://') || pathOrUrl.startsWith('https://');
+
   @override
   Widget build(BuildContext context) {
+    final imageProvider = _isNet
+        ? NetworkImage(pathOrUrl)
+        : AssetImage(pathOrUrl) as ImageProvider;
+
     return Container(
       width: size,
       height: size,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.white, width: 2),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
             color: Color(0x33000000),
             blurRadius: 6,
@@ -1143,8 +1158,20 @@ class _Avatar extends StatelessWidget {
           ),
         ],
       ),
-      clipBehavior: Clip.antiAlias,
-      child: _tryNetworkOrAsset(pathOrUrl, fit: BoxFit.cover),
+      child: CircleAvatar(
+        radius: size / 2,
+        backgroundColor: Colors.white,
+        child: ClipOval(
+          child: Image(
+            image: imageProvider,
+            fit: BoxFit.cover,
+            width: size,
+            height: size,
+            errorBuilder: (_, __, ___) =>
+                const Icon(Icons.image_not_supported, color: Color(0xFF9E9E9E)),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -1228,7 +1255,7 @@ class _StarsRow extends StatelessWidget {
         color = const Color(0xFFFFC107);
       } else {
         icon = Icons.star_border;
-        color = Colors.black87; // contorno visible
+        color = Colors.black87;
       }
       stars.add(Icon(icon, size: size, color: color));
       if (i != 4) stars.add(SizedBox(width: gap));

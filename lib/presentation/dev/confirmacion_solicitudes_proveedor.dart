@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../../core/ui/ui.dart';
 import '../../core/utils/service_images.dart';
-/* import '../../../core/utils/service_images.dart'; */
+
+/* import 'package:flutter_fixgo_login/core/components/organisms/app_top_bar.dart';
+import 'package:flutter_fixgo_login/core/components/molecules/info_bar.dart';
+import 'package:flutter_fixgo_login/core/widgets/organisms/service_card.dart';
+
+import 'package:flutter_fixgo_login/core//utils/service_images.dart'; */
 
 class ConfirmacionProveedorPage extends StatefulWidget {
   const ConfirmacionProveedorPage({super.key});
@@ -22,22 +27,21 @@ class _ConfirmacionProveedorPageState extends State<ConfirmacionProveedorPage> {
         rating: 4.2,
         serviceType: 'Pintura',
         title: 'Pintar sala y comedor',
-        materialSource: 'Proveedor',
+        materialSource: 'Proveedor', // aquí el proveedor aporta material
         location: 'Yautepec, Mor.',
         dateText: '26/08/2025',
         timeText: '17:20 Hrs',
         placeImageUrl: 'https://picsum.photos/seed/room/300/200',
         description:
             'Resane y alisado; sellador + 2 manos. Trabajo limpio. Área: 72 m².',
-        miniImages:
-            const [], // vacío: se resolverá con serviceMiniImages() que esta en core/utils/service_images.dart
+        miniImages: const [], // vacío: se resolverá con serviceMiniImages()
         totalText: r'$1,200 MXN',
         serviceNumber: '24569',
         proposalStatus: ProposalStatus.pendiente,
         estimatedTimeText: '1 h 20 min',
       ),
-      // En status PENDIENTE, para proveedor debe ver "modificar hora / costo"
-      pendingView: ProposalPendingView.proveedor,
+      // 🔹 AHORA usamos la vista "cliente" (versión sencilla SIN inputs)
+      pendingView: ProposalPendingView.cliente,
     ),
     _ProposalItem(
       data: ServiceRequestData(
@@ -81,21 +85,20 @@ class _ConfirmacionProveedorPageState extends State<ConfirmacionProveedorPage> {
     ),
   ];
 
-  // Acciones simuladas (sustituye)
+  // Acciones simuladas (sustituye por Supabase después)
 
   Future<void> _rejectAt(int index) async {
-    //  update status, etc.
     setState(() => _items.removeAt(index));
   }
 
   Future<void> _confirmAt(int index) async {
     final item = _items[index];
     if (item.data.proposalStatus == ProposalStatus.pendiente) {
-      //  update status a 'enviada'
+      // update status a 'enviada'
       setState(() {
         _items[index] = item.copyWith(
           data: item.data.copyWith(proposalStatus: ProposalStatus.enviada),
-          pendingView: null,
+          pendingView: null, // ya no es pendiente
         );
       });
     }
@@ -175,18 +178,19 @@ class _ServiceCardItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Si la lista viene vacía, resolvemos miniImages con assets locales por tipo
-    final resolvedData = (item.data.miniImages.isEmpty)
+    final baseData = (item.data.miniImages.isEmpty)
         ? item.data.copyWith(
             miniImages: serviceMiniImages(item.data.serviceType),
           )
         : item.data;
 
-    // Para proveedor:
-    // Si está PENDIENTE y el material es del proveedor: verá inputs de hora/costo (la card detecta esto con materialSource = 'Proveedor').
-    // Si está ENVIADA o ACEPTADA: versiones correspondientes.
+    // Para esta página queremos SIEMPRE la versión sencilla (tipo cliente)
+    final resolvedData = baseData;
+
     return ServiceRequestCard(
       variant: ServiceCardVariant.propuesta,
       data: resolvedData,
+      // 🔹 Si viene pendienteView, la usamos; en el primer item es "cliente"
       proposalPendingView: item.pendingView,
       onReject: onReject,
       onConfirmWithPayload:

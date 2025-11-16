@@ -492,15 +492,21 @@ class _SolicitudCardItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Autocompletar miniImages según tipo de servicio si viene vacío
-    final resolvedData = (item.data.miniImages.isEmpty)
+    final baseData = (item.data.miniImages.isEmpty)
         ? item.data.copyWith(
             miniImages: serviceMiniImages(item.data.serviceType),
           )
         : item.data;
 
+    // Forzamos que estas tarjetas sean propuestas en estado Pendiente
+    final resolvedData = baseData.copyWith(
+      proposalStatus: baseData.proposalStatus ?? ProposalStatus.pendiente,
+    );
+
     return ServiceRequestCard(
-      variant: ServiceCardVariant.solicitud,
+      variant: ServiceCardVariant.propuesta, // 🔹 AHORA ES PROPUESTA
       data: resolvedData,
+      proposalPendingView: ProposalPendingView.proveedor, // 🔹 Vista proveedor
       onReject: onReject,
       onConfirm: onConfirm,
       autoHeight: true,
