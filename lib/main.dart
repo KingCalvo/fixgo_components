@@ -27,7 +27,7 @@ class MainApp extends StatelessWidget {
     if (kDebugMode) {
       return const MaterialApp(
         debugShowCheckedModeBanner: true,
-        home: AdminPanelPage(),
+        home: ProveedorPerfilPage(),
       );
     }
 

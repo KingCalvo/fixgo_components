@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-// Sirve para ver y modificar la disponibilidad de tiempo del proveedor.
+/// Sirve para ver y modificar la disponibilidad de tiempo del proveedor.
 class AvailabilityData {
   final String daysLabel;
   final String timeRangeText;
@@ -8,6 +8,20 @@ class AvailabilityData {
     this.daysLabel = 'Lunes a Viernes',
     required this.timeRangeText,
   });
+}
+
+/// Controller para poder controlar el modo edición desde afuera
+class AvailabilityRowController {
+  VoidCallback? _exitEditModeCallback;
+
+  void _attach(VoidCallback cb) {
+    _exitEditModeCallback = cb;
+  }
+
+  // Lo llamas desde afuera (por ejemplo, al guardar todo en el header)
+  void exitEditMode() {
+    _exitEditModeCallback?.call();
+  }
 }
 
 // Row de disponibilidad
@@ -21,12 +35,16 @@ class AvailabilityRow extends StatefulWidget {
   final double baseWidth;
   final EdgeInsets padding;
 
+  // Controller opcional para salir del modo edición desde el exterior
+  final AvailabilityRowController? controller;
+
   const AvailabilityRow({
     super.key,
     required this.data,
     this.onSave,
     this.baseWidth = 412,
     this.padding = const EdgeInsets.all(14),
+    this.controller,
   });
 
   @override
@@ -36,7 +54,7 @@ class AvailabilityRow extends StatefulWidget {
 class _AvailabilityRowState extends State<AvailabilityRow> {
   bool _isEditing = false;
   bool _isSaving = false;
-  late String _currentTime; // lo que se muestra cuando no está editando
+  late String _currentTime;
   final TextEditingController _controller = TextEditingController();
 
   @override
@@ -44,6 +62,28 @@ class _AvailabilityRowState extends State<AvailabilityRow> {
     super.initState();
     _currentTime = widget.data.timeRangeText;
     _controller.text = _currentTime;
+    _attachController();
+  }
+
+  @override
+  void didUpdateWidget(covariant AvailabilityRow oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller != widget.controller) {
+      _attachController();
+    }
+  }
+
+  void _attachController() {
+    widget.controller?._attach(() {
+      if (!mounted) return;
+      if (_isEditing || _isSaving) {
+        setState(() {
+          _isEditing = false;
+          _isSaving = false;
+          _controller.text = _currentTime;
+        });
+      }
+    });
   }
 
   @override
@@ -96,80 +136,88 @@ class _AvailabilityRowState extends State<AvailabilityRow> {
       child: Container(
         color: Colors.white,
         padding: widget.padding,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Columna izquierda
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    'Disponible:',
-                    style: TextStyle(
-                      fontFamily: 'Roboto',
-                      fontWeight: FontWeight.w700,
-                      fontSize: 16,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-
-                  // Si está editando, muestra TextField; si no, texto plano
-                  if (_isEditing) ...[
-                    Text(
-                      widget.data.daysLabel,
-                      style: const TextStyle(
-                        fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w500,
-                        fontSize: 14,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    SizedBox(
-                      height: 40,
-                      child: TextField(
-                        controller: _controller,
-                        textInputAction: TextInputAction.done,
-                        decoration: InputDecoration(
-                          hintText: 'Ej: 9:00–18:00',
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 8,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          isDense: true,
-                        ),
-                        onSubmitted: (_) => _handleEditOrSave(),
-                      ),
-                    ),
-                  ] else ...[
-                    Text(
-                      '${widget.data.daysLabel}: $_currentTime',
-                      style: const TextStyle(
-                        fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w400,
-                        fontSize: 14,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ],
-                ],
+            const Text(
+              'Disponible:',
+              style: TextStyle(
+                fontFamily: 'Roboto',
+                fontWeight: FontWeight.w700,
+                fontSize: 16,
+                color: Colors.black,
               ),
             ),
+            const SizedBox(height: 6),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Lado izquierdo: días + hora o input
+                Expanded(
+                  child: _isEditing
+                      ? Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Flexible(
+                              flex: 2,
+                              child: Text(
+                                widget.data.daysLabel,
+                                style: const TextStyle(
+                                  fontFamily: 'Roboto',
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 14,
+                                  color: Colors.black87,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Flexible(
+                              flex: 3,
+                              child: SizedBox(
+                                height: 32,
+                                child: TextField(
+                                  controller: _controller,
+                                  textInputAction: TextInputAction.done,
+                                  decoration: InputDecoration(
+                                    hintText: 'Ej: 9:00–18:00',
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 8,
+                                    ),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    isDense: true,
+                                  ),
+                                  onSubmitted: (_) => _handleEditOrSave(),
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      : Text(
+                          '${widget.data.daysLabel}: $_currentTime',
+                          style: const TextStyle(
+                            fontFamily: 'Roboto',
+                            fontWeight: FontWeight.w400,
+                            fontSize: 14,
+                            color: Colors.black,
+                          ),
+                        ),
+                ),
 
-            const SizedBox(width: 12),
+                const SizedBox(width: 12),
 
-            // Botón Editar/Guardar
-            _ActionButton(
-              label: _isEditing ? 'Guardar' : 'Editar',
-              icon: _isEditing ? Icons.check : Icons.edit,
-              isBusy: _isSaving,
-              onTap: _isSaving ? null : _handleEditOrSave,
+                // Botón Editar / Guardar
+                _ActionButton(
+                  label: _isEditing ? 'Guardar' : 'Editar',
+                  icon: _isEditing ? Icons.check : Icons.edit,
+                  isBusy: _isSaving,
+                  onTap: _isSaving ? null : _handleEditOrSave,
+                ),
+              ],
             ),
           ],
         ),

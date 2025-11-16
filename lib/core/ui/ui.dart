@@ -1,4 +1,4 @@
-export 'organisms/profile_header.dart';
+export 'organisms/profile_header_card.dart';
 export 'molecules/logo_slogan_card.dart';
 export 'atoms/login_button.dart';
 export 'molecules/logo_name_card.dart';

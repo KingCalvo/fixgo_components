@@ -1,12 +1,15 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 
-/// DTO para hidratar el widget desde la capa de Presentación.
-/// (Rellénalo desde tu ViewModel/Controller con datos de Supabase/Firebase)
+/// Datos base del proveedor
 class ProviderProfileHeaderData {
-  final String name; // p.ej. "Juan Pérez"  (Supabase)
-  final double rating; // p.ej. 4.9           (Supabase)
-  final int reviews; // p.ej. 88            (Supabase)
-  final String imageUrl; // p.ej. URL Firebase Storage
+  final String name;
+  final double rating;
+  final int reviews;
+  final String imageUrl;
 
   const ProviderProfileHeaderData({
     required this.name,
@@ -16,73 +19,133 @@ class ProviderProfileHeaderData {
   });
 }
 
-/// Card de cabecera de perfil (412×319 base) con gradiente y acciones.
-class ProfileHeaderCard extends StatelessWidget {
-  /// Datos que vienen de tu capa de Presentación.
+/// Header de perfil (normal / edición).
+class ProfileHeaderCard extends StatefulWidget {
   final ProviderProfileHeaderData data;
 
-  /// Callbacks (navegación/acciones) — implementación desde Presentación.
+  /// Flecha atrás (si es null, NO se muestra)
   final VoidCallback? onBack;
+
+  /// Ícono Config (si es null, NO se muestra). En edición se reemplaza por Guardar.
   final VoidCallback? onSettings;
 
-  /// Colores configurables (defaults según especificación).
+  /// Si true, muestra botón "+" en la imagen y el botón "Guardar todo"
+  final bool isEditing;
+
+  /// Sube imagen a storage y retorna URL pública (para la foto de perfil)
+  final Future<String> Function(XFile file)? onSave;
+
+  /// 🔹 NUEVO: callback para guardar TODOS los cambios de la página
+  final Future<void> Function()? onSaveAll;
+
   final Color topColor;
   final Color bottomColor;
-
-  /// Si quieres forzar ancho/alto; si no, el widget escala responsivamente
-  /// dentro de su contenedor usando 412×319 como referencia.
-  final double baseWidth;
-  final double baseHeight;
+  final double height;
 
   const ProfileHeaderCard({
     Key? key,
     required this.data,
     this.onBack,
     this.onSettings,
+    this.isEditing = false,
+    this.onSave,
+    this.onSaveAll,
     this.topColor = const Color(0xFF1F3C88),
     this.bottomColor = const Color(0xFF080F22),
-    this.baseWidth = 412,
-    this.baseHeight = 319,
+    this.height = 319,
   }) : super(key: key);
 
   @override
+  State<ProfileHeaderCard> createState() => _ProfileHeaderCardState();
+}
+
+class _ProfileHeaderCardState extends State<ProfileHeaderCard> {
+  final ImagePicker _picker = ImagePicker();
+
+  XFile? _picked;
+  String? _finalImageOverride;
+  bool _saving = false;
+
+  Future<bool> _ensurePermission() async {
+    if (kIsWeb) return true;
+    final photosGranted = await Permission.photos.request().isGranted;
+    final storageGranted = await Permission.storage.request().isGranted;
+    return photosGranted || storageGranted;
+  }
+
+  Future<void> _pickImage() async {
+    final ok = await _ensurePermission();
+    if (!ok) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Permiso de galería denegado')),
+      );
+      return;
+    }
+    final XFile? img = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+    );
+    if (img != null && mounted) setState(() => _picked = img);
+  }
+
+  /// 🔹 Guarda TODO:
+  /// 1) Si hay nueva foto y onSave != null → sube imagen y actualiza URL
+  /// 2) Llama onSaveAll() (página guarda descripción, servicios, etc.)
+  Future<void> _handleSaveAll() async {
+    if (widget.onSaveAll == null) return;
+    setState(() => _saving = true);
+
+    try {
+      // 1) Guardar imagen si hay una seleccionada
+      if (_picked != null && widget.onSave != null) {
+        final url = await widget.onSave!(_picked!);
+        if (!mounted) return;
+        setState(() {
+          _finalImageOverride = url;
+          _picked = null;
+        });
+      }
+
+      // 2) Guardar el resto de cambios (página)
+      await widget.onSaveAll!.call();
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Cambios guardados')));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error al guardar: $e')));
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        // Calcula factor de escala para mantener proporción base 412×319.
-        final double w = constraints.maxWidth.isFinite
-            ? constraints.maxWidth
-            : baseWidth;
-        final double h = constraints.maxHeight.isFinite
-            ? constraints.maxHeight
-            : baseHeight;
-
-        // Si el padre no fija alto, usamos el alto base.
-        final bool heightUnbounded = !constraints.hasBoundedHeight;
-        final double width = w == 0 ? baseWidth : w;
-        final double height = heightUnbounded
-            ? baseHeight
-            : (h == 0 ? baseHeight : h);
-
-        // Escala respecto a dimensiones base
-        final double scaleX = width / baseWidth;
-        final double scaleY = height / baseHeight;
-        final double scale = scaleX < scaleY ? scaleX : scaleY;
-
-        return Center(
-          child: SizedBox(
-            width: baseWidth * scale,
-            height: baseHeight * scale,
-            child: _ProfileHeaderContent(
-              data: data,
-              onBack: onBack,
-              onSettings: onSettings,
-              topColor: topColor,
-              bottomColor: bottomColor,
-            ),
-          ),
-        );
-      },
+    return SizedBox(
+      width: double.infinity,
+      height: widget.height,
+      child: _ProfileHeaderContent(
+        data: widget.data,
+        onBack: widget.onBack,
+        onSettings: widget.onSettings,
+        isEditing: widget.isEditing,
+        onPickImage: _pickImage,
+        // El botón Guardar siempre está habilitado en modo edición
+        // si hay un callback de guardado global:
+        onSaveAll: (widget.isEditing && widget.onSaveAll != null)
+            ? _handleSaveAll
+            : null,
+        saving: _saving,
+        topColor: widget.topColor,
+        bottomColor: widget.bottomColor,
+        picked: _picked,
+        finalImageOverride: _finalImageOverride,
+      ),
     );
   }
 }
@@ -91,6 +154,15 @@ class _ProfileHeaderContent extends StatelessWidget {
   final ProviderProfileHeaderData data;
   final VoidCallback? onBack;
   final VoidCallback? onSettings;
+
+  final bool isEditing;
+  final VoidCallback? onPickImage;
+  final VoidCallback? onSaveAll;
+  final bool saving;
+
+  final XFile? picked;
+  final String? finalImageOverride;
+
   final Color topColor;
   final Color bottomColor;
 
@@ -98,55 +170,78 @@ class _ProfileHeaderContent extends StatelessWidget {
     required this.data,
     required this.onBack,
     required this.onSettings,
+    required this.isEditing,
+    required this.onPickImage,
+    required this.onSaveAll,
+    required this.saving,
     required this.topColor,
     required this.bottomColor,
+    required this.picked,
+    required this.finalImageOverride,
   });
+
+  ImageProvider _resolveImageProvider() {
+    if (picked != null) {
+      return kIsWeb
+          ? NetworkImage(picked!.path)
+          : FileImage(File(picked!.path));
+    }
+    if (finalImageOverride != null && finalImageOverride!.isNotEmpty) {
+      return NetworkImage(finalImageOverride!);
+    }
+    return NetworkImage(data.imageUrl);
+  }
 
   @override
   Widget build(BuildContext context) {
+    final imageProvider = _resolveImageProvider();
+
     return Material(
-      // permite ripple en overlay
       color: Colors.transparent,
       child: Container(
+        width: double.infinity,
+        height: double.infinity,
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [topColor, bottomColor],
           ),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: const [
-            BoxShadow(
-              color: Colors.black26,
-              blurRadius: 12,
-              offset: Offset(0, 6),
-            ),
-          ],
         ),
-        clipBehavior: Clip.antiAlias,
         child: Stack(
           children: [
-            // Acciones superiores
-            Positioned(
-              left: 8,
-              top: 8,
-              child: SafeArea(
-                child: _ActionIcon(
-                  icon: Icons.arrow_back,
-                  tooltip: 'Volver',
-                  onTap: onBack,
+            // Flecha: solo cuando NO está en modo edición
+            if (onBack != null && !isEditing)
+              Positioned(
+                left: 8,
+                top: 8,
+                child: SafeArea(
+                  child: _ActionIcon(
+                    icon: Icons.arrow_back,
+                    tooltip: 'Volver',
+                    onTap: onBack,
+                  ),
                 ),
               ),
-            ),
+
+            // Derecha: Guardar / Configuración
             Positioned(
               right: 8,
               top: 8,
               child: SafeArea(
-                child: _ActionIcon(
-                  icon: Icons.settings,
-                  tooltip: 'Ajustes',
-                  onTap: onSettings,
-                ),
+                child: isEditing
+                    ? _SaveButton(
+                        enabled: onSaveAll != null && !saving,
+                        saving: saving,
+                        onTap: onSaveAll,
+                      )
+                    : (onSettings != null
+                          ? _ActionIcon(
+                              icon: Icons.settings,
+                              tooltip: 'Ajustes',
+                              onTap: onSettings,
+                            )
+                          : const SizedBox.shrink()),
               ),
             ),
 
@@ -155,40 +250,70 @@ class _ProfileHeaderContent extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Avatar 130×130 con borde blanco 6
-                  Container(
-                    width: 130,
-                    height: 130,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 6),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Colors.black26,
-                          blurRadius: 10,
-                          offset: Offset(0, 6),
+                  // Foto + botón "+"
+                  Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Container(
+                        width: 130,
+                        height: 130,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 6),
                         ),
-                      ],
-                    ),
-                    child: ClipOval(
-                      child: Image.network(
-                        data.imageUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          color: Colors.grey.shade300,
-                          child: const Icon(
-                            Icons.person,
-                            size: 56,
-                            color: Colors.grey,
+                        child: ClipOval(
+                          child: Image(
+                            image: imageProvider,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, _, __) => Container(
+                              color: Colors.grey.shade300,
+                              child: const Icon(
+                                Icons.person,
+                                size: 56,
+                                color: Colors.grey,
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
+                      if (isEditing)
+                        Positioned(
+                          right: -2,
+                          bottom: -2,
+                          child: GestureDetector(
+                            onTap: onPickImage,
+                            child: Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF4392F9),
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 3,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.25),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              alignment: Alignment.center,
+                              child: const Icon(
+                                Icons.add,
+                                size: 24,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
 
                   const SizedBox(height: 12),
 
-                  // Nombre (Roboto regular 20)
                   Text(
                     data.name,
                     textAlign: TextAlign.center,
@@ -208,13 +333,9 @@ class _ProfileHeaderContent extends StatelessWidget {
                   ),
 
                   const SizedBox(height: 12),
-
-                  // Estrellas 24 con gap 10
                   _StarsRow(rating: data.rating),
-
                   const SizedBox(height: 10),
 
-                  // "4.9 Calificación" (Roboto light 15)
                   Text(
                     '${data.rating.toStringAsFixed(1)} Calificación',
                     textAlign: TextAlign.center,
@@ -225,10 +346,7 @@ class _ProfileHeaderContent extends StatelessWidget {
                       color: Colors.white,
                     ),
                   ),
-
                   const SizedBox(height: 4),
-
-                  // "88 Reseñas" (Roboto light 15)
                   Text(
                     '${data.reviews} Reseñas',
                     textAlign: TextAlign.center,
@@ -249,7 +367,6 @@ class _ProfileHeaderContent extends StatelessWidget {
   }
 }
 
-/// Botón circular con ripple, animación de escala y ligera elevación.
 class _ActionIcon extends StatefulWidget {
   final IconData icon;
   final String tooltip;
@@ -275,24 +392,19 @@ class _ActionIconState extends State<_ActionIcon> {
         scale: scale,
         duration: const Duration(milliseconds: 100),
         curve: Curves.easeOut,
-        child: InkWell(
-          customBorder: const CircleBorder(),
-          onTap: widget.onTap,
-          onHighlightChanged: (v) => setState(() => _pressed = v),
-          splashColor: Colors.white.withValues(alpha: 0.25),
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Icon(
-              widget.icon,
-              size: 28,
-              color: Colors.white,
-              shadows: const [
-                Shadow(
-                  color: Colors.black54,
-                  blurRadius: 4,
-                  offset: Offset(0, 1),
-                ),
-              ],
+        child: Material(
+          color: Colors.transparent,
+          shape: const CircleBorder(),
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: widget.onTap,
+            onHighlightChanged: (v) => setState(() => _pressed = v),
+            splashColor: Colors.white.withValues(alpha: 0.25),
+            highlightColor: Colors.white.withValues(alpha: 0.10),
+            child: SizedBox(
+              width: 40,
+              height: 40,
+              child: Icon(widget.icon, color: Colors.white, size: 22),
             ),
           ),
         ),
@@ -301,14 +413,61 @@ class _ActionIconState extends State<_ActionIcon> {
   }
 }
 
-extension on _ActionIconState {
-  // Reemplazamos el icono con overlay para dibujar blanco con “sombra suave”.
-  // (Helper para mantener el Material circular anterior)
-  Widget get _iconStack =>
-      Stack(alignment: Alignment.center, children: const []);
+// Botón Guardar (verde, siempre igual que otros botones)
+class _SaveButton extends StatelessWidget {
+  final bool enabled;
+  final bool saving;
+  final VoidCallback? onTap;
+  const _SaveButton({required this.enabled, required this.saving, this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final Color bg = enabled
+        ? const Color(0xFF2E7D32)
+        : Colors.white.withValues(alpha: 0.20);
+    return Material(
+      color: bg,
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        onTap: enabled ? onTap : null,
+        borderRadius: BorderRadius.circular(20),
+        splashColor: Colors.white.withValues(alpha: 0.18),
+        highlightColor: Colors.white.withValues(alpha: 0.10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (saving)
+                const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              else
+                const Icon(Icons.check, size: 18, color: Colors.white),
+              const SizedBox(width: 6),
+              Text(
+                saving ? 'Guardando...' : 'Guardar',
+                style: const TextStyle(
+                  fontFamily: 'Roboto',
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-/// Fila de 5 estrellas con soporte full/half/outline (24px, gap 10)
+// Fila de 5 estrellas
 class _StarsRow extends StatelessWidget {
   final double rating;
   const _StarsRow({required this.rating});
@@ -320,7 +479,7 @@ class _StarsRow extends StatelessWidget {
     final int full = rating.floor();
     final bool hasHalf = (rating - full) >= 0.5;
 
-    List<Widget> stars = [];
+    final List<Widget> stars = [];
     for (int i = 0; i < 5; i++) {
       IconData icon;
       if (i < full) {
@@ -333,7 +492,6 @@ class _StarsRow extends StatelessWidget {
       stars.add(Icon(icon, size: starSize, color: const Color(0xFFFFC107)));
       if (i != 4) stars.add(const SizedBox(width: gap));
     }
-
     return Row(mainAxisSize: MainAxisSize.min, children: stars);
   }
 }

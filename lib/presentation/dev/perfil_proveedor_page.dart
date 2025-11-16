@@ -2,24 +2,22 @@ import 'package:flutter/material.dart';
 import '../../core/ui/ui.dart';
 import '../../core/utils/service_images.dart';
 
-/* // Top bar & utils
+/* import 'package:flutter/material.dart';
 import 'package:flutter_fixgo_login/core/components/organisms/app_top_bar.dart';
 import 'package:flutter_fixgo_login/core/utils/service_images.dart';
+import 'package:flutter_fixgo_login/features/proveedores/presentation/components/profile_header.dart';
 
-// Header perfil (usa tu ProfileHeaderCard con isEditing / onSave / onSettings)
-import 'package:flutter_fixgo_login/features/proveedores/presentation/components/profile_header_card.dart';
-
-// Services description (versión con isEditing y onSaveItem)
 import 'package:flutter_fixgo_login/core/widgets/organisms/services_description.dart';
-
-// Availability (renombrado de availability_row → availability_option.dart)
-// La clase probablemente sigue llamándose AvailabilityRow/AvailabilityData.
 import 'package:flutter_fixgo_login/features/proveedores/presentation/components/availability_option.dart';
-
-// Reseñas
 import 'package:flutter_fixgo_login/core/widgets/organisms/reviews_carousel.dart'; */
+/* import 'package:flutter/material.dart';
+import 'package:flutter_fixgo_login/core/components/organisms/app_top_bar.dart';
+import 'package:flutter_fixgo_login/core/utils/service_images.dart';
+import 'package:flutter_fixgo_login/features/proveedores/presentation/components/profile_header.dart';
 
-// Opcional: Supabase (para futuro guardado real)
+import 'package:flutter_fixgo_login/core/widgets/organisms/services_description.dart';
+import 'package:flutter_fixgo_login/features/proveedores/presentation/components/availability_option.dart';
+import 'package:flutter_fixgo_login/core/widgets/organisms/reviews_carousel.dart'; */
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -33,7 +31,8 @@ class ProveedorPerfilPage extends StatefulWidget {
 class _ProveedorPerfilPageState extends State<ProveedorPerfilPage> {
   // Estado general. Con cubit cambiar el status de _pageEditing para que se cambie el icono de guardado a configuración
   bool _pageEditing = false;
-
+  final AvailabilityRowController _availabilityController =
+      AvailabilityRowController();
   // Reseñas (cárgalas luego desde Supabase)
   final List<ReviewInfo> _reviews = const [];
 
@@ -173,6 +172,33 @@ class _ProveedorPerfilPageState extends State<ProveedorPerfilPage> {
     );
   }
 
+  /// 🔹 NUEVO: guardar TODOS los cambios de la página
+  ///
+  /// Aquí es donde más adelante puedes:
+  /// - Enviar descripción a Supabase
+  /// - Enviar servicios actualizados
+  /// - Enviar disponibilidad, etc.
+  ///
+  /// Por ahora solo salimos del modo edición.
+  /// 🔹 Guardar TODOS los cambios de la página
+  Future<void> _saveAllChanges() async {
+    // Si la descripción está en modo edición, primero la aplicamos
+    if (_aboutEditing) {
+      await _saveAbout();
+    }
+
+    // 🔹 Salir del modo edición de disponibilidad
+    _availabilityController.exitEditMode();
+
+    // 🔹 Salir del modo edición general de la página
+    setState(() {
+      _pageEditing = false;
+      _aboutEditing = false;
+    });
+
+    // Aquí después conectas Supabase para guardar todo si quieres
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -195,6 +221,7 @@ class _ProveedorPerfilPageState extends State<ProveedorPerfilPage> {
                     isEditing: _pageEditing,
                     onBack: () => Navigator.of(context).maybePop(),
                     onSettings: _toggleWholePageEdit, // habilita modo edición
+                    // Guarda la foto de perfil (se usa dentro del header cuando hay nueva imagen)
                     onSave: (file) async {
                       final url = await _uploadProfileImage(file);
                       setState(() {
@@ -203,11 +230,13 @@ class _ProveedorPerfilPageState extends State<ProveedorPerfilPage> {
                           rating: _header.rating,
                           reviews: _header.reviews,
                           imageUrl: url,
-                          // Con cubit cambiar el status de _pageEditing para que se cambie el icono de guardado a configuración
                         );
                       });
                       return url;
                     },
+
+                    // 🔹 Guardar TODO (foto + otros campos)
+                    onSaveAll: _saveAllChanges,
                   ),
 
                   const SizedBox(height: 15),
@@ -264,6 +293,7 @@ class _ProveedorPerfilPageState extends State<ProveedorPerfilPage> {
                   AvailabilityRow(
                     data: _availability,
                     onSave: _saveAvailability,
+                    controller: _availabilityController,
                   ),
 
                   const SizedBox(height: 15),
